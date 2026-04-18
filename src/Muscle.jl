@@ -3,7 +3,8 @@ module Muscle
 include("Utils/Utils.jl")
 
 include("Index.jl")
-export Index
+export Index, variance, Covariant, Contravariant
+@compat public Label, label, Variance, Invariant
 
 include("Tensor.jl")
 export Tensor, isisometry
