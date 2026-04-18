@@ -4,7 +4,6 @@ using Muscle
 using PythonCall
 using PythonCall.Core: pyisnone
 using PythonCall.Convert: pyconvert_add_rule, pyconvert_return, pyconvert_unconverted
-using QuantumTags
 
 function pyconvert_rule_qiskit_instruction(T, instr)
     # NOTE we discard any quantum register information: we only keep qubit index

@@ -1,5 +1,3 @@
-using QuantumTags
-
 struct Index{T}
     tag::T
 end
@@ -89,5 +87,3 @@ function factorinds(all_inds, left_inds, right_inds)
 
     return factorinds(all_inds, _left_inds, _right_inds)
 end
-
-QuantumTags.isplug(ind::Index) = isplug(ind.tag)

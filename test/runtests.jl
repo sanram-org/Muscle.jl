@@ -17,7 +17,6 @@ using SafeTestsets
 end
 
 @testset "Integration" verbose = true begin
-    @safetestset "QuantumTags" include("integration/quantumtags.jl")
     @safetestset "OMEinsum" include("integration/omeinsum.jl")
     @safetestset "Strided" include("integration/strided.jl")
     @safetestset "Dagger" include("integration/dagger.jl")
