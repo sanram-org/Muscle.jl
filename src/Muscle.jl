@@ -1,7 +1,5 @@
 module Muscle
 
-import EinExprs: inds
-
 include("Utils/Utils.jl")
 
 include("Index.jl")
@@ -34,9 +32,6 @@ export tensor_bieigen_thin, tensor_bieigen_thin!
 
 include("Operations/simple_update.jl")
 export simple_update, simple_update!
-
-# rexports from EinExprs
-export inds
 
 # precompilation
 using PrecompileTools
