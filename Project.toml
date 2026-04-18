@@ -1,7 +1,7 @@
 name = "Muscle"
 uuid = "21fe5c4b-a943-414d-bf3e-516f24900631"
-authors = ["Sergio Sánchez Ramírez <sergio.sanchez.ramirez@bsc.es> and contributors"]
 version = "0.3.20"
+authors = ["Sergio Sánchez Ramírez and contributors"]
 
 [deps]
 Adapt = "79e6a3ab-5dfb-504d-930d-738a2a938a0e"
@@ -40,6 +40,7 @@ Adapt = "4"
 ArgCheck = "2.5.0"
 CUDA = "5.7.0"
 ChainRulesCore = "1.0"
+Compat = "4.18.1"
 Dagger = "0.18, 0.19"
 ITensors = "0.9"
 LinearAlgebra = "1.10"
