@@ -1,5 +1,7 @@
 module Muscle
 
+using Compat
+
 include("Utils/Utils.jl")
 
 include("Index.jl")
