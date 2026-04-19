@@ -11,7 +11,7 @@ export Index, variance, Covariant, Contravariant
 include("Tensor.jl")
 export Tensor, isisometry
 
-include("Domain.jl")
+include("Platform.jl")
 include("Backend.jl")
 
 include("Operations/hadamard.jl")

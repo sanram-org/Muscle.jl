@@ -17,18 +17,18 @@ Perform a binary tensor contraction operation between `a` and `b` and store the 
 """
 function binary_einsum! end
 
-choose_backend_rule(::typeof(binary_einsum), ::DomainHost, ::DomainHost) = BackendBase()
-choose_backend_rule(::typeof(binary_einsum), ::DomainCUDA, ::DomainCUDA) = BackendCuTENSOR()
-choose_backend_rule(::typeof(binary_einsum), ::DomainReactant, ::DomainReactant) = BackendReactant()
-choose_backend_rule(::typeof(binary_einsum), ::DomainReactant, ::DomainHost) = BackendReactant()
-choose_backend_rule(::typeof(binary_einsum), ::DomainHost, ::DomainReactant) = BackendReactant()
-choose_backend_rule(::typeof(binary_einsum), ::DomainDagger, ::DomainDagger) = BackendDagger()
-choose_backend_rule(::typeof(binary_einsum), ::DomainHost, ::DomainDagger) = BackendDagger()
-choose_backend_rule(::typeof(binary_einsum), ::DomainDagger, ::DomainHost) = BackendDagger()
+choose_backend_rule(::typeof(binary_einsum), ::PlatformHost, ::PlatformHost) = BackendBase()
+choose_backend_rule(::typeof(binary_einsum), ::PlatformCUDA, ::PlatformCUDA) = BackendCuTENSOR()
+choose_backend_rule(::typeof(binary_einsum), ::PlatformReactant, ::PlatformReactant) = BackendReactant()
+choose_backend_rule(::typeof(binary_einsum), ::PlatformReactant, ::PlatformHost) = BackendReactant()
+choose_backend_rule(::typeof(binary_einsum), ::PlatformHost, ::PlatformReactant) = BackendReactant()
+choose_backend_rule(::typeof(binary_einsum), ::PlatformDagger, ::PlatformDagger) = BackendDagger()
+choose_backend_rule(::typeof(binary_einsum), ::PlatformHost, ::PlatformDagger) = BackendDagger()
+choose_backend_rule(::typeof(binary_einsum), ::PlatformDagger, ::PlatformHost) = BackendDagger()
 
-choose_backend_rule(::typeof(binary_einsum!), ::DomainHost, ::DomainHost, ::DomainHost) = BackendBase()
-choose_backend_rule(::typeof(binary_einsum!), ::DomainCUDA, ::DomainCUDA, ::DomainCUDA) = BackendCuTENSOR()
-choose_backend_rule(::typeof(binary_einsum!), ::DomainReactant, ::DomainReactant, ::DomainReactant) = BackendReactant()
+choose_backend_rule(::typeof(binary_einsum!), ::PlatformHost, ::PlatformHost, ::PlatformHost) = BackendBase()
+choose_backend_rule(::typeof(binary_einsum!), ::PlatformCUDA, ::PlatformCUDA, ::PlatformCUDA) = BackendCuTENSOR()
+choose_backend_rule(::typeof(binary_einsum!), ::PlatformReactant, ::PlatformReactant, ::PlatformReactant) = BackendReactant()
 
 function binary_einsum(a::Tensor, b::Tensor; dims=(∩(inds(a), inds(b))), out=nothing)
     inds_sum = ∩(dims, inds(a), inds(b))

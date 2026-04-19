@@ -18,11 +18,11 @@ function tensor_qr_thin end
 function tensor_qr_thin! end
 
 # TODO add a preference system for some backends
-choose_backend_rule(::typeof(tensor_qr_thin), ::DomainHost) = BackendBase()
-choose_backend_rule(::typeof(tensor_qr_thin), ::DomainCUDA) = BackendCuTensorNet()
+choose_backend_rule(::typeof(tensor_qr_thin), ::PlatformHost) = BackendBase()
+choose_backend_rule(::typeof(tensor_qr_thin), ::PlatformCUDA) = BackendCuTensorNet()
 
-choose_backend_rule(::typeof(tensor_qr_thin!), ::DomainHost, ::DomainHost, ::DomainHost) = BackendBase()
-choose_backend_rule(::typeof(tensor_qr_thin!), ::DomainCUDA, ::DomainCUDA, ::DomainCUDA) = BackendCuTensorNet()
+choose_backend_rule(::typeof(tensor_qr_thin!), ::PlatformHost, ::PlatformHost, ::PlatformHost) = BackendBase()
+choose_backend_rule(::typeof(tensor_qr_thin!), ::PlatformCUDA, ::PlatformCUDA, ::PlatformCUDA) = BackendCuTensorNet()
 
 function tensor_qr_thin(A::Tensor; inds_q=(), inds_r=(), ind_virtual=Index(gensym(:qr)), inplace=false, kwargs...)
     backend = choose_backend(tensor_qr_thin, A)

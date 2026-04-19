@@ -8,8 +8,8 @@ const MLIR = Reactant.MLIR
 const stablehlo = MLIR.Dialects.stablehlo
 using PrecompileTools
 
-Muscle.Domain(::Type{<:TracedRArray}) = Muscle.DomainReactant()
-Muscle.Domain(::Type{<:Reactant.AnyConcreteRArray}) = Muscle.DomainReactant()
+Muscle.Platform(::Type{<:TracedRArray}) = Muscle.PlatformReactant()
+Muscle.Platform(::Type{<:Reactant.AnyConcreteRArray}) = Muscle.PlatformReactant()
 
 # we specify `mode` and `track_numbers` types due to ambiguity
 # TODO in Reactant v0.3, rename it to `Reactant.transmute_type`
@@ -73,7 +73,7 @@ Base.Base.@nospecializeinfer function Muscle.choose_backend_rule(
 end
 
 function Muscle.unary_einsum(
-    ::Muscle.DomainReactant, @nospecialize(a::Tensor{TracedRNumber{T}}); dims=nonunique(inds(a)), out=nothing
+    ::Muscle.PlatformReactant, @nospecialize(a::Tensor{TracedRNumber{T}}); dims=nonunique(inds(a)), out=nothing
 ) where {T}
     error("compilation of `Muscle.unary_einsum` is not yet supported")
 end

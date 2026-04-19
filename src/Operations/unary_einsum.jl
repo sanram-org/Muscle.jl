@@ -17,11 +17,11 @@ Perform a unary tensor contraction operation on `a` and store the result in `c`.
 """
 function unary_einsum! end
 
-choose_backend_rule(::typeof(unary_einsum), ::DomainHost) = BackendOMEinsum()
-choose_backend_rule(::typeof(unary_einsum), ::DomainCUDA) = BackendOMEinsum()
+choose_backend_rule(::typeof(unary_einsum), ::PlatformHost) = BackendOMEinsum()
+choose_backend_rule(::typeof(unary_einsum), ::PlatformCUDA) = BackendOMEinsum()
 
-choose_backend_rule(::typeof(unary_einsum!), ::DomainHost, ::DomainHost) = BackendOMEinsum()
-choose_backend_rule(::typeof(unary_einsum!), ::DomainCUDA, ::DomainCUDA) = BackendOMEinsum()
+choose_backend_rule(::typeof(unary_einsum!), ::PlatformHost, ::PlatformHost) = BackendOMEinsum()
+choose_backend_rule(::typeof(unary_einsum!), ::PlatformCUDA, ::PlatformCUDA) = BackendOMEinsum()
 
 function unary_einsum(x::Tensor; dims=nonunique(inds(x)), out=nothing)
     inds_sum = ∩(dims, inds(x))

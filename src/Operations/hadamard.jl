@@ -1,8 +1,8 @@
 function hadamard end
 function hadamard! end
 
-choose_backend_rule(::typeof(hadamard), ::Domain, ::Domain) = BackendBase()
-choose_backend_rule(::typeof(hadamard!), ::Domain, ::Domain, ::Domain) = BackendBase()
+choose_backend_rule(::typeof(hadamard), ::Platform, ::Platform) = BackendBase()
+choose_backend_rule(::typeof(hadamard!), ::Platform, ::Platform, ::Platform) = BackendBase()
 
 function hadamard(a::Tensor, b::Tensor)
     # `b` must be broadcastable to `a`

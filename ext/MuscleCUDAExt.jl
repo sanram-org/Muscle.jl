@@ -4,7 +4,7 @@ using Muscle
 using CUDA
 using cuTENSOR
 
-Muscle.Domain(::Type{<:CuArray}) = Muscle.DomainCUDA()
+Muscle.Platform(::Type{<:CuArray}) = Muscle.PlatformCUDA()
 
 ## `CUDA` (uses cuTENSOR)
 function Muscle.binary_einsum(::Muscle.BackendCuTENSOR, inds_c, a, inds_a, b, inds_b; kwargs...)

@@ -31,7 +31,7 @@ function choose_backend(f::Function, arrays::AbstractArray...)
         return CURRENT_BACKEND[]
     end
 
-    memspaces = Domain.(arrays)
+    memspaces = Platform.(arrays)
     return choose_backend_rule(f, memspaces...)
 end
 

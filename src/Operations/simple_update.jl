@@ -1,8 +1,8 @@
 function simple_update end
 function simple_update! end
 
-choose_backend_rule(::typeof(simple_update), ::DomainHost, ::DomainHost, ::DomainHost) = BackendBase()
-choose_backend_rule(::typeof(simple_update), ::DomainCUDA, ::DomainCUDA, ::DomainCUDA) = BackendCuTensorNet()
+choose_backend_rule(::typeof(simple_update), ::PlatformHost, ::PlatformHost, ::PlatformHost) = BackendBase()
+choose_backend_rule(::typeof(simple_update), ::PlatformCUDA, ::PlatformCUDA, ::PlatformCUDA) = BackendCuTensorNet()
 
 # absorb behavior trait
 # used to keep type-inference happy (`DontAbsorb` returns 3 tensors, while the rest return 2)

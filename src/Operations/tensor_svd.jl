@@ -30,17 +30,17 @@ Same as tensor_svd_thin() but with truncation, additional keyword arguments are
 function tensor_svd_trunc end
 function tensor_svd_trunc! end
 
-choose_backend_rule(::typeof(tensor_svd_thin), ::DomainHost) = BackendBase()
-choose_backend_rule(::typeof(tensor_svd_thin), ::DomainCUDA) = BackendCuTensorNet()
+choose_backend_rule(::typeof(tensor_svd_thin), ::PlatformHost) = BackendBase()
+choose_backend_rule(::typeof(tensor_svd_thin), ::PlatformCUDA) = BackendCuTensorNet()
 
-choose_backend_rule(::typeof(tensor_svd_thin!), ::Vararg{DomainHost,4}) = BackendBase()
-choose_backend_rule(::typeof(tensor_svd_thin!), ::Vararg{DomainCUDA,4}) = BackendCuTensorNet()
+choose_backend_rule(::typeof(tensor_svd_thin!), ::Vararg{PlatformHost,4}) = BackendBase()
+choose_backend_rule(::typeof(tensor_svd_thin!), ::Vararg{PlatformCUDA,4}) = BackendCuTensorNet()
 
-choose_backend_rule(::typeof(tensor_svd_trunc), ::DomainHost) = BackendBase()
-choose_backend_rule(::typeof(tensor_svd_trunc), ::DomainCUDA) = BackendCuTensorNet()
+choose_backend_rule(::typeof(tensor_svd_trunc), ::PlatformHost) = BackendBase()
+choose_backend_rule(::typeof(tensor_svd_trunc), ::PlatformCUDA) = BackendCuTensorNet()
 
-choose_backend_rule(::typeof(tensor_svd_trunc!), ::Vararg{DomainHost,4}) = BackendBase()
-choose_backend_rule(::typeof(tensor_svd_trunc!), ::Vararg{DomainCUDA,4}) = BackendCuTensorNet()
+choose_backend_rule(::typeof(tensor_svd_trunc!), ::Vararg{PlatformHost,4}) = BackendBase()
+choose_backend_rule(::typeof(tensor_svd_trunc!), ::Vararg{PlatformCUDA,4}) = BackendCuTensorNet()
 
 # function allocate_result(::typeof(tensor_svd_thin), A; inds_u=(), inds_v=(), ind_s=Index(gensym(:s)), kwargs...)
 #     inds_u, inds_v = factorinds(inds(A), inds_u, inds_v)
