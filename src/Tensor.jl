@@ -74,6 +74,37 @@ Adapt.adapt_structure(to, x::Tensor) = Tensor(adapt(to, parent(x)), inds(x))
 arraytype(::Type{Tensor{T,N,A}}) where {T,N,A} = A
 arraytype(::T) where {T<:Tensor} = arraytype(T)
 
+const regular_labels = Char['i','j','k','l','m','n','o','p','r','s','t','u','v','x','a','e','h','β','γ','ϕ']
+const superscript_labels = Char['ⁱ','ʲ','ᵏ','ˡ','ᵐ','ⁿ','ᵒ','ᵖ','ʳ','ˢ','ᵗ','ᵘ',
+'ᵛ','ˣ','ᵃ','ᵉ','ʰ','ᵝ','ᵞ','ᵠ']
+const subscript_labels = Char['ᵢ','ⱼ','ₖ','ₗ','ₘ','ₙ','ₒ','ₚ','ᵣ','ₛ','ₜ','ᵤ','ᵥ','ₓ','ₐ','ₑ','ₕ','ᵦ','ᵧ','ᵩ']
+
+Base.@nospecializeinfer function index_signature(@nospecialize(t::Tensor))
+    chars = Vector{Char}(undef, ndims(t))
+    N = length(superscript_labels)
+    for (i, ind) in enumerate(inds(t))
+        j = mod1(i, N)
+        chars[i] = if variance(ind) == Covariant
+            superscript_labels[j]
+        elseif variance(ind) == Contravariant
+            subscript_labels[j]
+        else
+            regular_labels[j]
+        end
+    end
+    return String(chars)
+end
+
+Base.print_array(io::IO, tensor::Tensor) = Base.print_array(io, parent(tensor))
+function Base.showarg(io::IO, tensor::Tensor, toplevel)
+    toplevel || print(io, "::")
+    print(io, "Tensor(")
+    Base.showarg(io, parent(tensor), false)
+    print(io, ")")
+    ndims(tensor) > 0 && print(io, " with signature $(index_signature(tensor))")
+    return nothing
+end
+
 """
     Base.similar(::Tensor{T,N}[, S::Type, dims::Base.Dims{N}; inds])
 
