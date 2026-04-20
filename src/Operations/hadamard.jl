@@ -1,14 +1,13 @@
 function hadamard end
 function hadamard! end
 
-choose_backend_rule(::typeof(hadamard), ::Platform, ::Platform) = BackendBase()
-choose_backend_rule(::typeof(hadamard!), ::Platform, ::Platform, ::Platform) = BackendBase()
-
 function hadamard(a::Tensor, b::Tensor)
     # `b` must be broadcastable to `a`
     ndims(a) >= ndims(b) || return hadamard(b, a)
     @argcheck inds(b) ⊆ inds(a)
-    backend = choose_backend(hadamard, parent(a), parent(b))
+
+    _platform = promote_platform(platform(a), platform(b))
+    backend = getbackend(hadamard, _platform)
     return hadamard(backend, a, b)
 end
 
@@ -23,7 +22,8 @@ function hadamard!(c::Tensor, a::Tensor, b::Tensor)
     @argcheck inds(c) == inds(a)
     @argcheck inds(b) ⊆ inds(a)
 
-    backend = choose_backend(hadamard!, parent(c), parent(a), parent(b))
+    _platform = promote_platform(platform(c), platform(a), platform(b))
+    backend = getbackend(hadamard!, _platform)
     return hadamard!(backend, c, a, b)
 end
 

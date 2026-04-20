@@ -30,18 +30,6 @@ Same as tensor_svd_thin() but with truncation, additional keyword arguments are
 function tensor_svd_trunc end
 function tensor_svd_trunc! end
 
-choose_backend_rule(::typeof(tensor_svd_thin), ::PlatformHost) = BackendBase()
-choose_backend_rule(::typeof(tensor_svd_thin), ::PlatformCUDA) = BackendCuTensorNet()
-
-choose_backend_rule(::typeof(tensor_svd_thin!), ::Vararg{PlatformHost,4}) = BackendBase()
-choose_backend_rule(::typeof(tensor_svd_thin!), ::Vararg{PlatformCUDA,4}) = BackendCuTensorNet()
-
-choose_backend_rule(::typeof(tensor_svd_trunc), ::PlatformHost) = BackendBase()
-choose_backend_rule(::typeof(tensor_svd_trunc), ::PlatformCUDA) = BackendCuTensorNet()
-
-choose_backend_rule(::typeof(tensor_svd_trunc!), ::Vararg{PlatformHost,4}) = BackendBase()
-choose_backend_rule(::typeof(tensor_svd_trunc!), ::Vararg{PlatformCUDA,4}) = BackendCuTensorNet()
-
 # function allocate_result(::typeof(tensor_svd_thin), A; inds_u=(), inds_v=(), ind_s=Index(gensym(:s)), kwargs...)
 #     inds_u, inds_v = factorinds(inds(A), inds_u, inds_v)
 #     left_extent = prod(Base.Fix1(size, A), inds_u)
@@ -61,7 +49,7 @@ choose_backend_rule(::typeof(tensor_svd_trunc!), ::Vararg{PlatformCUDA,4}) = Bac
 # end
 
 function tensor_svd_thin(A::Tensor; inds_u=(), inds_v=(), ind_s=Index(gensym(:svd)), inplace=false, kwargs...)
-    backend = choose_backend(tensor_svd_thin, A)
+    backend = getbackend(tensor_svd_thin, platform(A))
     return tensor_svd_thin(backend, A; inds_u, inds_v, ind_s, inplace, kwargs...)
 end
 
@@ -70,7 +58,8 @@ function tensor_svd_thin(::Backend, A; kwargs...)
 end
 
 function tensor_svd_thin!(Q::Tensor, R::Tensor, A::Tensor; kwargs...)
-    backend = choose_backend(tensor_svd_thin!, Q, R, A)
+    _platform = promote_platform(platform(Q), platform(R), platform(A))
+    backend = getbackend(tensor_svd_thin!, _platform)
     return tensor_svd_thin!(backend, Q, R, A; kwargs...)
 end
 
@@ -79,7 +68,7 @@ function tensor_svd_thin!(::Backend, args...; kwargs...)
 end
 
 function tensor_svd_trunc(A::Tensor; inds_u=(), inds_v=(), ind_s=Index(gensym(:svd)), inplace=false, kwargs...)
-    backend = choose_backend(tensor_svd_trunc, A)
+    backend = getbackend(tensor_svd_trunc, platform(A))
     return tensor_svd_trunc(backend, A; inds_u, inds_v, ind_s, inplace, kwargs...)
 end
 
@@ -88,7 +77,8 @@ function tensor_svd_trunc(::Backend, A; kwargs...)
 end
 
 function tensor_svd_trunc!(Q::Tensor, R::Tensor, A::Tensor; kwargs...)
-    backend = choose_backend(tensor_svd_trunc!, Q, R, A)
+    _platform = promote_platform(platform(Q), platform(R), platform(A))
+    backend = getbackend(tensor_svd_trunc!, _platform)
     return tensor_svd_trunc!(backend, Q, R, A; kwargs...)
 end
 

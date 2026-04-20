@@ -22,23 +22,17 @@ function tensor_eigen_thin! end
 function tensor_bieigen_thin end
 function tensor_bieigen_thin! end
 
-choose_backend_rule(::typeof(tensor_eigen_thin), ::PlatformHost) = BackendBase()
-choose_backend_rule(::typeof(tensor_eigen_thin!), ::Vararg{PlatformHost,3}) = BackendBase()
-
-choose_backend_rule(::typeof(tensor_bieigen_thin), ::PlatformHost) = BackendBase()
-choose_backend_rule(::typeof(tensor_bieigen_thin!), ::Vararg{PlatformHost,4}) = BackendBase()
-
 function tensor_eigen_thin(
     A::Tensor; inds_u=(), inds_uinv=(), ind_lambda=Index(gensym(:eigen)), inplace=false, kwargs...
 )
-    backend = choose_backend(tensor_eigen_thin, A)
+    backend = getbackend(tensor_eigen_thin, platform(A))
     return tensor_eigen_thin(backend, A; inds_u, inds_uinv, ind_lambda, inplace, kwargs...)
 end
 
 function tensor_bieigen_thin(
     A::Tensor; inds_u=(), inds_uinv=(), ind_lambda=Index(gensym(:eigen)), inplace=false, kwargs...
 )
-    backend = choose_backend(tensor_bieigen_thin, A)
+    backend = getbackend(tensor_bieigen_thin, platform(A))
     return tensor_bieigen_thin(backend, A; inds_u, inds_uinv, ind_lambda, inplace, kwargs...)
 end
 

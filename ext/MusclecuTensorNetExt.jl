@@ -6,6 +6,15 @@ using cuTensorNet: cuTensorNet
 using Muscle
 using Muscle: AbsorbBehavior, BackendCuTensorNet
 
+function __init__()
+    Muscle.register_backend!(BackendCuTensorNet())
+    Muscle.Operations.register_backend_for_op!(Muscle.Operations.simple_update, BackendCuTensorNet())
+    Muscle.Operations.register_backend_for_op!(Muscle.Operations.tensor_qr_thin, BackendCuTensorNet())
+    Muscle.Operations.register_backend_for_op!(Muscle.Operations.tensor_qr_thin!, BackendCuTensorNet())
+    Muscle.Operations.register_backend_for_op!(Muscle.Operations.tensor_svd_thin, BackendCuTensorNet())
+    Muscle.Operations.register_backend_for_op!(Muscle.Operations.tensor_svd_thin!, BackendCuTensorNet())
+end
+
 # TODO customize SVD algorithm
 # TODO configure GPU stream
 # TODO cache workspace memory

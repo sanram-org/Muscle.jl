@@ -17,15 +17,8 @@ Perform QR factorization on a tensor. Either `inds_q` or `inds_r` must be specif
 function tensor_qr_thin end
 function tensor_qr_thin! end
 
-# TODO add a preference system for some backends
-choose_backend_rule(::typeof(tensor_qr_thin), ::PlatformHost) = BackendBase()
-choose_backend_rule(::typeof(tensor_qr_thin), ::PlatformCUDA) = BackendCuTensorNet()
-
-choose_backend_rule(::typeof(tensor_qr_thin!), ::PlatformHost, ::PlatformHost, ::PlatformHost) = BackendBase()
-choose_backend_rule(::typeof(tensor_qr_thin!), ::PlatformCUDA, ::PlatformCUDA, ::PlatformCUDA) = BackendCuTensorNet()
-
 function tensor_qr_thin(A::Tensor; inds_q=(), inds_r=(), ind_virtual=Index(gensym(:qr)), inplace=false, kwargs...)
-    backend = choose_backend(tensor_qr_thin, A)
+    backend = getbackend(tensor_qr_thin, platform(A))
     return tensor_qr_thin(backend, A; inds_q, inds_r, ind_virtual, inplace, kwargs...)
 end
 
@@ -34,7 +27,8 @@ function tensor_qr_thin(::Backend, A; kwargs...)
 end
 
 function tensor_qr_thin!(Q::Tensor, R::Tensor, A::Tensor; kwargs...)
-    backend = choose_backend(tensor_qr_thin!, Q, R, A)
+    _platform = promote_platform(platform(Q), platform(R), platform(A))
+    backend = getbackend(tensor_qr_thin!, _platform)
     return tensor_qr_thin!(backend, Q, R, A; kwargs...)
 end
 

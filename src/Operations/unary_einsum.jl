@@ -17,12 +17,6 @@ Perform a unary tensor contraction operation on `a` and store the result in `c`.
 """
 function unary_einsum! end
 
-choose_backend_rule(::typeof(unary_einsum), ::PlatformHost) = BackendOMEinsum()
-choose_backend_rule(::typeof(unary_einsum), ::PlatformCUDA) = BackendOMEinsum()
-
-choose_backend_rule(::typeof(unary_einsum!), ::PlatformHost, ::PlatformHost) = BackendOMEinsum()
-choose_backend_rule(::typeof(unary_einsum!), ::PlatformCUDA, ::PlatformCUDA) = BackendOMEinsum()
-
 function unary_einsum(x::Tensor; dims=nonunique(inds(x)), out=nothing)
     inds_sum = ∩(dims, inds(x))
     inds_y = if isnothing(out)
@@ -31,7 +25,7 @@ function unary_einsum(x::Tensor; dims=nonunique(inds(x)), out=nothing)
         out
     end
 
-    backend = choose_backend(unary_einsum, x)
+    backend = getbackend(unary_einsum, platform(x))
     return unary_einsum(backend, inds_y, x)
 end
 
@@ -40,7 +34,8 @@ function unary_einsum(::Backend, x; kwargs...)
 end
 
 function unary_einsum!(y::Tensor, x::Tensor)
-    backend = choose_backend(unary_einsum!, y, x)
+    _platform = promote_platform(platform(y), platform(x))
+    backend = getbackend(unary_einsum!, _platform)
     unary_einsum!(backend, y, x)
     return y
 end

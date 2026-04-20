@@ -5,22 +5,13 @@ using Muscle: BackendOMEinsum
 using OMEinsum
 using ArgCheck
 
-# TODO add a preference system for some backends
-function Muscle.choose_backend_rule(::typeof(unary_einsum), ::Type{<:Array})
-    Muscle.BackendOMEinsum()
+function __init__()
+    Muscle.register_backend!(BackendOMEinsum())
+    Muscle.Operations.register_backend_for_op!(Muscle.Operations.unary_einsum, BackendOMEinsum())
+    Muscle.Operations.register_backend_for_op!(Muscle.Operations.unary_einsum!, BackendOMEinsum())
+    Muscle.Operations.register_backend_for_op!(Muscle.Operations.binary_einsum, BackendOMEinsum())
+    Muscle.Operations.register_backend_for_op!(Muscle.Operations.binary_einsum!, BackendOMEinsum())
 end
-
-function Muscle.choose_backend_rule(::typeof(unary_einsum!), ::Type{<:Array}, ::Type{<:Array})
-    Muscle.BackendOMEinsum()
-end
-
-# function Muscle.choose_backend_rule(::typeof(binary_einsum), ::Type{<:Array}, ::Type{<:Array})
-#     Muscle.BackendOMEinsum()
-# end
-
-# function Muscle.choose_backend_rule(::typeof(binary_einsum!), ::Type{<:Array}, ::Type{<:Array}, ::Type{<:Array})
-#     Muscle.BackendOMEinsum()
-# end
 
 function Muscle.unary_einsum(::BackendOMEinsum, inds_y, x)
     y = Tensor(similar(parent(x), Tuple(size(x, ind) for ind in inds_y)), inds_y)

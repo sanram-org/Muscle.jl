@@ -3,13 +3,30 @@ module MuscleReactantExt
 using Muscle
 using Muscle: BackendReactant
 using Reactant
-using Reactant: TracedRNumber, TracedRArray
+using Reactant: TracedRNumber, TracedRArray, ConcreteRNumber, ConcreteRArray, AnyTracedRArray, AnyConcreteRArray
 const MLIR = Reactant.MLIR
 const stablehlo = MLIR.Dialects.stablehlo
 using PrecompileTools
 
-Muscle.Platform(::Type{<:TracedRArray}) = Muscle.PlatformReactant()
-Muscle.Platform(::Type{<:Reactant.AnyConcreteRArray}) = Muscle.PlatformReactant()
+function __init__()
+    Muscle.register_backend!(BackendReactant())
+    Muscle.Operations.register_backend_for_op!(Muscle.Operations.unary_einsum, BackendReactant())
+    Muscle.Operations.register_backend_for_op!(Muscle.Operations.unary_einsum!, BackendReactant())
+    Muscle.Operations.register_backend_for_op!(Muscle.Operations.binary_einsum, BackendReactant())
+    Muscle.Operations.register_backend_for_op!(Muscle.Operations.binary_einsum!, BackendReactant())
+end
+
+for T in [TracedRNumber, ConcreteRNumber, TracedRArray, ConcreteRArray, AnyTracedRArray, AnyConcreteRArray]
+    @eval begin
+        Base.@nospecializeinfer function Muscle.Platform(@nospecialize(::Type{$T}))
+            Muscle.PlatformReactant()
+        end
+
+        Base.@nospecializeinfer function Muscle.Platform(@nospecialize(::$T))
+            Muscle.PlatformReactant()
+        end
+    end
+end
 
 # we specify `mode` and `track_numbers` types due to ambiguity
 # TODO in Reactant v0.3, rename it to `Reactant.transmute_type`
@@ -63,17 +80,8 @@ Base.@nospecializeinfer function Reactant.traced_type_inner(
     return Tensor{T_traced,N,A_traced}
 end
 
-Base.Base.@nospecializeinfer function Muscle.choose_backend_rule(
-    ::typeof(Muscle.binary_einsum!),
-    @nospecialize(_::TracedRArray),
-    @nospecialize(_::TracedRArray),
-    @nospecialize(_::TracedRArray)
-)
-    Muscle.BackendReactant()
-end
-
 function Muscle.unary_einsum(
-    ::Muscle.PlatformReactant, @nospecialize(a::Tensor{TracedRNumber{T}}); dims=nonunique(inds(a)), out=nothing
+    ::BackendReactant, @nospecialize(a::Tensor{TracedRNumber{T}}); dims=nonunique(inds(a)), out=nothing
 ) where {T}
     error("compilation of `Muscle.unary_einsum` is not yet supported")
 end

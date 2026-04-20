@@ -8,30 +8,33 @@ struct PlatformCUDA <: Platform end
 struct PlatformReactant <: Platform end
 struct PlatformDagger <: Platform end
 
-Platform(::T) where {T<:AbstractArray} = Platform(T)
-Platform(::Type{<:Array}) = PlatformHost()
-Platform(::Type{T}) where {T<:WrappedArray} = Platform(Adapt.unwrap_type(T))
-Platform(x::Tensor) = Platform(parent_type(x))
+platform(::T) where {T<:AbstractArray} = platform(T)
+platform(::Type{<:Array}) = PlatformHost()
+platform(::Type{T}) where {T<:WrappedArray} = platform(Adapt.unwrap_type(T))
+platform(x::Tensor) = platform(parent_type(x))
 
-# TODO promote memspace
-function promote_domain(a, b)
-    @argcheck Platform(a) == Platform(b) "Platform must be the same"
-    return a, b
+function promote_platform(a::Platform, b::Platform)
+    ab = promote_platform_rule(a, b)
+    ba = promote_platform_rule(b, a)
+    res = promote_platform_result(ab, ba)
+    if ismissing(res)
+        throw(ArgumentError("No promotion found for $a and $b"))
+    else
+        return res
+    end
 end
 
-# Base.promote_rule(::Type{PlatformHost}, ::Type{PlatformHost}) = PlatformHost
-# Base.promote_rule(::Type{PlatformHost}, ::Type{PlatformCUDA}) = PlatformCUDA
-# Base.promote_rule(::Type{PlatformHost}, ::Type{PlatformReactant}) = PlatformReactant
+promote_platform(a, b, c, args...) = promote_platform(promote_platform(a, b), c, args...)
+promote_platform(a::AbstractArray, b::AbstractArray) = promote_platform(Platform(a), Platform(b))
 
-# promote_domain(::A, ::B) where {A<:Platform,B<:Platform} = promote_type(A, B)()
+promote_platform_result(::Missing, ::Missing) = missing
+promote_platform_result(@nospecialize(ab::Platform), ::Missing) = ab
+promote_platform_result(::Missing, @nospecialize(ba::Platform)) = ba
+promote_platform_result(@nospecialize(ab::Platform), @nospecialize(ba::Platform)) = (@assert(ab == ba); ab)
 
-# promote_domain(a, b, c, args...) = promote_domain(promote_domain(a, b), c, args...)
-# function promote_domain(a::AbstractArray, b::AbstractArray)
-#     target_memspace = promote_domain(memory_space(a), memory_space(b))
-#     return adapt_memspace(target_memspace, a), adapt_memspace(target_memspace, b)
-# end
-
-# # TODO promote_domain for Tensor
-
-# adapt_memspace(::PlatformHost, x::AbstractArray) = memory_space(x) != PlatformHost() ? adapt(Array, x) : x
-# adapt_memspace(::PlatformCUDA, x::AbstractArray) = memory_space(x) != PlatformCUDA() ? adapt(CuArray, x) : x
+promote_platform_rule(@nospecialize(::Platform), @nospecialize(::Platform)) = missing
+promote_platform_rule(::PlatformHost, ::PlatformHost) = PlatformHost()
+promote_platform_rule(::PlatformHost, ::PlatformCUDA) = PlatformCUDA()
+promote_platform_rule(::PlatformHost, ::PlatformReactant) = PlatformReactant()
+promote_platform_rule(::PlatformHost, ::PlatformDagger) = PlatformDagger()
+promote_platform_rule(::PlatformCUDA, ::PlatformReactant) = PlatformReactant()

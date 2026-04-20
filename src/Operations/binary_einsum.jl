@@ -17,19 +17,6 @@ Perform a binary tensor contraction operation between `a` and `b` and store the 
 """
 function binary_einsum! end
 
-choose_backend_rule(::typeof(binary_einsum), ::PlatformHost, ::PlatformHost) = BackendBase()
-choose_backend_rule(::typeof(binary_einsum), ::PlatformCUDA, ::PlatformCUDA) = BackendCuTENSOR()
-choose_backend_rule(::typeof(binary_einsum), ::PlatformReactant, ::PlatformReactant) = BackendReactant()
-choose_backend_rule(::typeof(binary_einsum), ::PlatformReactant, ::PlatformHost) = BackendReactant()
-choose_backend_rule(::typeof(binary_einsum), ::PlatformHost, ::PlatformReactant) = BackendReactant()
-choose_backend_rule(::typeof(binary_einsum), ::PlatformDagger, ::PlatformDagger) = BackendDagger()
-choose_backend_rule(::typeof(binary_einsum), ::PlatformHost, ::PlatformDagger) = BackendDagger()
-choose_backend_rule(::typeof(binary_einsum), ::PlatformDagger, ::PlatformHost) = BackendDagger()
-
-choose_backend_rule(::typeof(binary_einsum!), ::PlatformHost, ::PlatformHost, ::PlatformHost) = BackendBase()
-choose_backend_rule(::typeof(binary_einsum!), ::PlatformCUDA, ::PlatformCUDA, ::PlatformCUDA) = BackendCuTENSOR()
-choose_backend_rule(::typeof(binary_einsum!), ::PlatformReactant, ::PlatformReactant, ::PlatformReactant) = BackendReactant()
-
 function binary_einsum(a::Tensor, b::Tensor; dims=(∩(inds(a), inds(b))), out=nothing)
     inds_sum = ∩(dims, inds(a), inds(b))
 
@@ -39,37 +26,23 @@ function binary_einsum(a::Tensor, b::Tensor; dims=(∩(inds(a), inds(b))), out=n
         out
     end
 
-    backend = choose_backend(binary_einsum, parent(a), parent(b))
-    # if ismissing(backend)
-    #     @warn "No backend found for binary_einsum(::$(typeof(a)), ::$(typeof(b))), so unwrapping data"
-    #     data_a = collect(data_a)
-    #     data_b = collect(data_b)
-    #     backend = choose_backend(binary_einsum, data_a, data_b)
-    # end
-
+    _platform = promote_platform(platform(a), platform(b))
+    backend = getbackend(binary_einsum, _platform)
     return binary_einsum(backend, inds_c, a, b)
 end
 
-function binary_einsum(::Backend, inds_c, a, b)
+function binary_einsum(@nospecialize(::Backend), inds_c, a, b)
     throw(ArgumentError("`binary_einsum` not implemented or not loaded for backend $(typeof(a))"))
 end
 
 function binary_einsum!(c::Tensor, a::Tensor, b::Tensor)
-    data_c = parent(c)
-    data_a = parent(a)
-    data_b = parent(b)
-    backend = choose_backend(binary_einsum!, data_c, data_a, data_b)
-    if ismissing(backend)
-        data_a = collect(data_a)
-        data_b = collect(data_b)
-        backend = choose_backend(binary_einsum, data_a, data_b)
-    end
-
+    _platform = promote_platform(platform(c), platform(a), platform(b))
+    backend = getbackend(binary_einsum!, _platform)
     binary_einsum!(backend, c, a, b)
     return c
 end
 
-function binary_einsum!(::Backend, c, a, b)
+function binary_einsum!(@nospecialize(::Backend), c, a, b)
     throw(ArgumentError("`binary_einsum!` not implemented or not loaded for backend $(typeof(a))"))
 end
 

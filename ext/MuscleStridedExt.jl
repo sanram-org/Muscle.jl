@@ -6,22 +6,10 @@ using Strided
 using StridedViews
 using ArgCheck
 
-function Muscle.choose_backend_rule(::typeof(binary_einsum), ::Type{<:StridedView}, ::Type{<:Array})
-    BackendStrided()
-end
-
-function Muscle.choose_backend_rule(::typeof(binary_einsum), ::Type{<:Array}, ::Type{<:StridedView})
-    BackendStrided()
-end
-
-function Muscle.choose_backend_rule(::typeof(binary_einsum), ::Type{<:StridedView}, ::Type{<:StridedView})
-    BackendStrided()
-end
-
-function Muscle.choose_backend_rule(
-    ::typeof(binary_einsum!), ::Type{<:StridedView}, ::Type{<:StridedView}, ::Type{<:StridedView}
-)
-    BackendStrided()
+function __init__()
+    Muscle.register_backend!(BackendStrided())
+    Muscle.Operations.register_backend_for_op!(Muscle.Operations.binary_einsum, BackendStrided())
+    Muscle.Operations.register_backend_for_op!(Muscle.Operations.binary_einsum!, BackendStrided())
 end
 
 function Muscle.binary_einsum(::BackendStrided, inds_c, a::Tensor, b::Tensor)

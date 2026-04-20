@@ -1,9 +1,23 @@
 using ArgCheck
 using ScopedValues
 
+"""
+    Backend
+
+Abstract type representing a computational backend for tensor operations.
+Current backends include:
+
+- `BackendBase` using purely Base and/or LinearAlgebra stdlibs.
+- `BackendStrided` using [Strided.jl](https://github.com/QuantumKitHub/Strided.jl).
+- `BackendOMEinsum` using the [OMEinsum.jl](https://github.com/under-peter/OMEinsum.jl).
+- `BackendCUDA` using [CUDA.jl](https://github.com/JuliaGPU/CUDA.jl).
+- `BackendCuTENSOR` using [CuTENSOR.jl](https://github.com/JuliaGPU/CUDA.jl/tree/master/lib/cutensor).
+- `BackendCuTensorNet` using [CuTensorNet.jl](https://github.com/JuliaGPU/CUDA.jl/tree/master/lib/cutensornet).
+- `BackendReactant` using [Reactant.jl](https://github.com/EnzymeAD/Reactant.jl).
+- `BackendDagger` using [Dagger.jl](https://github.com/JuliaParallel/Dagger.jl).
+"""
 abstract type Backend end
 
-struct BackendDefault <: Backend end
 struct BackendBase <: Backend end
 struct BackendStrided <: Backend end
 struct BackendOMEinsum <: Backend end
@@ -13,37 +27,39 @@ struct BackendCuTensorNet <: Backend end
 struct BackendReactant <: Backend end
 struct BackendDagger <: Backend end
 
-const CURRENT_BACKEND = ScopedValue{Backend}()
+supported_platforms(::BackendBase) = Platform[PlatformHost()]
+supported_platforms(::BackendStrided) = Platform[PlatformHost(), PlatformCUDA()]
+supported_platforms(::BackendOMEinsum) = Platform[PlatformHost(), PlatformCUDA()]
+supported_platforms(::BackendCUDA) = Platform[PlatformCUDA()]
+supported_platforms(::BackendCuTENSOR) = Platform[PlatformCUDA()]
+supported_platforms(::BackendCuTensorNet) = Platform[PlatformCUDA()]
+supported_platforms(::BackendReactant) = Platform[PlatformReactant()]
+supported_platforms(::BackendDagger) = Platform[PlatformDagger()]
 
-with_backend(f, backend::Backend) = with(f, CURRENT_BACKEND => backend)
+const BACKEND_LOCK = ReentrantLock()
+const AVAILABLE_BACKENDS = Set{Backend}([BackendBase()])
 
-# set of loaded backends available for use
-# const LOADED_BACKENDS = Set{Backend}([BackendBase()])
-# const LOADED_BACKENDS_LOCK = ReentrantLock()
-
-function choose_backend end
-# function allowed_backends end
-
-# choose_backend(f::Function, arrays::AbstractArray...) = choose_backend(f, arrays...)
-choose_backend(f::Function, tensors::Tensor...) = choose_backend(f, parent.(tensors)...)
-function choose_backend(f::Function, arrays::AbstractArray...)
-    if isassigned(CURRENT_BACKEND)
-        return CURRENT_BACKEND[]
-    end
-
-    memspaces = Platform.(arrays)
-    return choose_backend_rule(f, memspaces...)
+Base.@nospecializeinfer function register_backend!(@nospecialize(backend::Backend))
+    @lock BACKEND_LOCK push!(AVAILABLE_BACKENDS, backend)
+    return nothing
 end
 
-# choose_backend(arrays::AbstractArray...) = choose_backend(unwrap_type.(arrays)...)
-# choose_backend(arrays...) = missing
+Base.@nospecializeinfer function is_backend_available(@nospecialize(backend::Backend))
+    return backend ∈ AVAILABLE_BACKENDS
+end
 
-default_backend(op) = throw(ErrorException("No default backend defined for operation: $op"))
+"""
+    available_backends()
 
-macro default_backend(op, backend)
-    sop = Symbol(:current_, op)
-    quote
-        const $sop = ScopedValue(DefaultBackend())
-        default_backend(::typeof($op)) = $backend
-    end
+Returns the set of all currently available [`Backend`](@ref)s.
+"""
+available_backends() = copy(AVAILABLE_BACKENDS)
+
+"""
+    available_backends(platform::Platform)
+
+Returns the set of available [`Backend`](@ref)s that support the given [`Platform`](@ref).
+"""
+Base.@nospecializeinfer function available_backends(@nospecialize(platform::Platform))
+    return filter(backend -> platform in supported_platforms(backend), AVAILABLE_BACKENDS)
 end
