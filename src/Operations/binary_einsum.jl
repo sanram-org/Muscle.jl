@@ -55,12 +55,12 @@ function binary_einsum(::BackendBase, inds_c, a::Tensor, b::Tensor)
     @argcheck isdisjoint(inds_c, inds_contract) "`BackendBase` can't deal with hyperindices. Load OMEinsum and use `BackendOMEinsum` instead."
     @argcheck issetequal(inds_c, symdiff(inds(a), inds(b))) "`BackendBase` can't deal with hyperindices. Load OMEinsum and use `BackendOMEinsum` instead."
 
-    sizes_left = map(Base.Fix1(size, a), inds_left)
-    sizes_right = map(Base.Fix1(size, b), inds_right)
-    sizes_contract = map(Base.Fix1(size, a), inds_contract)
+    sizes_left = Int[size(a, ind) for ind in inds_left]
+    sizes_right = Int[size(b, ind) for ind in inds_right]
+    sizes_contract = Int[size(a, ind) for ind in inds_contract]
 
-    a_mat = reshape(parent(permutedims(a, [inds_left; inds_contract])), prod(sizes_left), prod(sizes_contract))
-    b_mat = reshape(parent(permutedims(b, [inds_contract; inds_right])), prod(sizes_contract), prod(sizes_right))
+    a_mat = reshape(parent(permutedims(a, Index[inds_left; inds_contract])), prod(sizes_left), prod(sizes_contract))
+    b_mat = reshape(parent(permutedims(b, Index[inds_contract; inds_right])), prod(sizes_contract), prod(sizes_right))
 
     c_mat = a_mat * b_mat
 
@@ -80,12 +80,12 @@ function binary_einsum!(::BackendBase, c::Tensor, a::Tensor, b::Tensor)
     # can't deal with inplace permutedims
     @argcheck inds(c) == [inds_left; inds_right]
 
-    sizes_left = map(Base.Fix1(size, a), inds_left)
-    sizes_right = map(Base.Fix1(size, b), inds_right)
-    sizes_contract = prod(Base.Fix1(size, a), inds_contract)
+    sizes_left = Int[size(a, ind) for ind in inds_left]
+    sizes_right = Int[size(b, ind) for ind in inds_right]
+    sizes_contract = Int[size(a, ind) for ind in inds_contract]
 
-    a_mat = reshape(parent(permutedims(a, [inds_left; inds_contract])), prod(sizes_left), prod(sizes_contract))
-    b_mat = reshape(parent(permutedims(b, [inds_contract; inds_right])), prod(sizes_contract), prod(sizes_right))
+    a_mat = reshape(parent(permutedims(a, Index[inds_left; inds_contract])), prod(sizes_left), prod(sizes_contract))
+    b_mat = reshape(parent(permutedims(b, Index[inds_contract; inds_right])), prod(sizes_contract), prod(sizes_right))
     c_mat = reshape(c, prod(sizes_left), prod(sizes_right))
 
     LinearAlgebra.mul!(c_mat, a_mat, b_mat)
