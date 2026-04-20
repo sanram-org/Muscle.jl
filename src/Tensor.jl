@@ -34,8 +34,6 @@ struct Tensor{T,N,A<:AbstractArray{T,N}} <: AbstractArray{T,N}
     end
 end
 
-Tensor(data::A, inds::Base.AbstractVecOrTuple{Symbol}) where {A<:AbstractArray} = Tensor(data, IndexList(Index.(inds)))
-
 Tensor(data::AbstractArray{T,0}) where {T} = Tensor(data, IndexList())
 Tensor(data::Number) = Tensor(fill(data))
 

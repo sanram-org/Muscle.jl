@@ -12,6 +12,14 @@ Base.@nospecializeinfer function ind_vect(@nospecialize(inds::Vararg{<:Index}))
     return vec
 end
 
+function ind_vect(inds::Vector{Symbol})
+    vec = Vector{Index}(undef, length(inds))
+    for i in eachindex(inds)
+        @inbounds vec[i] = Index(inds[i])
+    end
+    return vec
+end
+
 struct IndexList <: AbstractIndexList
     vec::Vector{Index}
 
