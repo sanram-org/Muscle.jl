@@ -181,9 +181,6 @@ dim(t::Tensor, i::Index) = findfirst(==(i), inds(t))
 Base.IteratorSize(T::Type{Tensor}) = Iterators.IteratorSize(parent_type(T))
 Base.IteratorEltype(T::Type{Tensor}) = Iterators.IteratorEltype(parent_type(T))
 
-Base.isdone(t::Tensor) = Base.isdone(parent(t))
-Base.isdone(t::Tensor, state) = Base.isdone(parent(t), state)
-
 # Indexing interface
 Base.IndexStyle(T::Type{<:Tensor}) = IndexStyle(parent_type(T))
 
