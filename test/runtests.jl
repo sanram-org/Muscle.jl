@@ -3,6 +3,8 @@ using Test
 using SafeTestsets
 
 @testset "Unit" verbose = true begin
+    @testset "Index" include("core/index.jl")
+    @testset "IndexList" include("core/indexlist.jl")
     @testset "Tensor" include("core/tensor.jl")
     @testset "Operations" verbose = true begin
         @testset "hadamard" include("core/operations/hadamard.jl")
