@@ -304,7 +304,7 @@ Base.selectdim(t::Tensor, d::Integer, i) = Tensor(selectdim(parent(t), d, i), in
 function Base.selectdim(t::Tensor{T,N}, d::Integer, i::Integer) where {T,N}
     data = selectdim(parent(t), d, i)
     indices = Index[label for (i, label) in enumerate(inds(t)) if i != d]
-    return Tensor{T,N - 1,typeof(data)}(data, indices)
+    return Tensor(data, indices)
 end
 
 Base.selectdim(t::Tensor, d, i) = selectdim(t, dim(t, d), i)

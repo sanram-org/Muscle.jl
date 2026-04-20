@@ -93,16 +93,19 @@ function findperm(from::AbstractIndexList, to::AbstractIndexList)
     @assert issetequal(from, to)
 
     # if there are hyperindices, we remove one by one
-    inds_to = collect(Union{Missing,I}, to)
+    inds_to = collect(Union{Missing,Index}, to)
+    res = Vector{Int}(undef, length(from))
 
-    return map(from) do ind
-        i = findfirst(isequal(ind), inds_to)
+    for i in eachindex(from)
+        j = findfirst(isequal(from[i]), inds_to)
 
         # mark element as used
-        inds_to[i] = missing
+        inds_to[j] = missing
 
-        i
+        res[i] = j
     end
+
+    return res
 end
 
 function factorinds(_all_inds, _left_inds, _right_inds)
