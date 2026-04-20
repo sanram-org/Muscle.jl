@@ -38,9 +38,6 @@ end
 
 Index(ind::Index, variance::Variance = variance(ind)) = Index(label(ind), variance)
 
-# TODO checkout whether this is a good idea
-Base.copy(x::Index) = x
-
 label(ind::Index) = ind.label
 variance(ind::Index) = ind.variance
 
