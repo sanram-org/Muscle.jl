@@ -23,6 +23,16 @@ Variance type of an index. It can be `Covariant`, `Contravariant` or `Invariant`
     Invariant # NOTE do not use in principle
 end
 
+function Base.adjoint(var::Variance)
+    if var == Covariant
+        return Contravariant
+    elseif var == Contravariant
+        return Covariant
+    else
+        return Invariant
+    end
+end
+
 """
     Index
 
@@ -42,6 +52,7 @@ label(ind::Index) = ind.label
 variance(ind::Index) = ind.variance
 
 variate(ind::Index, var::Variance) = Index(label(ind), var)
+Base.adjoint(ind::Index) = variate(ind, adjoint(variance(ind)))
 
 is_equal_label(ind::Index) = Base.Fix1(is_equal_label, ind)
 is_equal_label(ind1::Index, ind2::Index) = label(ind1) == label(ind2)
