@@ -31,8 +31,8 @@ function binary_einsum(a::Tensor, b::Tensor; dims=(∩(inds(a), inds(b))), out=n
     return binary_einsum(backend, inds_c, a, b)
 end
 
-function binary_einsum(@nospecialize(::Backend), inds_c, a, b)
-    throw(ArgumentError("`binary_einsum` not implemented or not loaded for backend $(typeof(a))"))
+Base.@nospecializeinfer function binary_einsum(@nospecialize(B::Backend), _, @nospecialize(a), @nospecialize(b))
+    throw(ArgumentError("`binary_einsum` not implemented or not loaded for backend $B"))
 end
 
 function binary_einsum!(c::Tensor, a::Tensor, b::Tensor)
@@ -42,11 +42,11 @@ function binary_einsum!(c::Tensor, a::Tensor, b::Tensor)
     return c
 end
 
-function binary_einsum!(@nospecialize(::Backend), c, a, b)
-    throw(ArgumentError("`binary_einsum!` not implemented or not loaded for backend $(typeof(a))"))
+Base.@nospecializeinfer function binary_einsum!(@nospecialize(B::Backend), @nospecialize(_), @nospecialize(_), @nospecialize(_))
+    throw(ArgumentError("`binary_einsum!` not implemented or not loaded for backend $B"))
 end
 
-function binary_einsum(::BackendBase, inds_c, a::Tensor, b::Tensor)
+Base.@nospecializeinfer function binary_einsum(::BackendBase, inds_c, @nospecialize(a::Tensor), @nospecialize(b::Tensor))
     inds_contract = inds(a) ∩ inds(b)
     inds_left = setdiff(inds(a), inds_contract)
     inds_right = setdiff(inds(b), inds_contract)
@@ -68,7 +68,7 @@ function binary_einsum(::BackendBase, inds_c, a::Tensor, b::Tensor)
     return permutedims(c, inds_c)
 end
 
-function binary_einsum!(::BackendBase, c::Tensor, a::Tensor, b::Tensor)
+Base.@nospecializeinfer function binary_einsum!(::BackendBase, @nospecialize(c::Tensor), @nospecialize(a::Tensor), @nospecialize(b::Tensor))
     inds_contract = inds(a) ∩ inds(b)
     inds_left = setdiff(inds(a), inds_contract)
     inds_right = setdiff(inds(b), inds_contract)
