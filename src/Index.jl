@@ -1,12 +1,10 @@
 """
-    Label{T}
+    Label
 
 Represents the label of an [`Index`](@ref); i.e. the matching name without variance information.
 """
-struct Label{T}
-    label::T
-
-    Label(label::T) where {T} = new{T}(label)
+struct Label
+    label::Any
 end
 
 Label(label::Label) = label
@@ -26,16 +24,16 @@ Variance type of an index. It can be `Covariant`, `Contravariant` or `Invariant`
 end
 
 """
-    Index{T}
+    Index
 
 Represents an index of a tensor. It consists of a [`Label`](@ref) and [`Variance`](@ref) information.
 """
-Base.@kwdef struct Index{T}
-    label::Label{T}
+Base.@kwdef struct Index
+    label::Label
     variance::Variance = Invariant
 
-    Index(label::T, variance::Variance = Invariant) where {T} = new{T}(Label(label), variance)
-    Index(label::Label{T}, variance::Variance = Invariant) where {T} = new{T}(label, variance)
+    Index(label, variance::Variance = Invariant) = new(Label(label), variance)
+    Index(label::Label, variance::Variance = Invariant) = new(label, variance)
 end
 
 Index(ind::Index, variance::Variance = variance(ind)) = Index(label(ind), variance)
