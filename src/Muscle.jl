@@ -1,6 +1,7 @@
 module Muscle
 
 using Compat
+using Reexport
 
 include("Utils/Utils.jl")
 
@@ -15,6 +16,7 @@ include("Platform.jl")
 include("Backend.jl")
 
 include("Operations/Operations.jl")
+@reexport using .Operations
 
 # precompilation
 using PrecompileTools
