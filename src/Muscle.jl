@@ -9,6 +9,8 @@ include("Index.jl")
 export Index, variance, Covariant, Contravariant
 @compat public Label, label, Variance, Invariant
 
+include("IndexList.jl")
+
 include("Tensor.jl")
 export Tensor, inds, isisometry
 

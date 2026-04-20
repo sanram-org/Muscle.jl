@@ -10,9 +10,9 @@ An array-like object with named dimensions (i.e. [`Index`](@ref)).
 """
 struct Tensor{T,N,A<:AbstractArray{T,N}} <: AbstractArray{T,N}
     data::A
-    inds::ImmutableVector{Index}
+    inds::IndexList
 
-    function Tensor(data::A, inds::ImmutableVector{I}) where {T,N,A<:AbstractArray{T,N},I<:Index}
+    function Tensor(data::A, inds::IndexList) where {T,N,A<:AbstractArray{T,N}}
         if length(inds) != N
             throw(ArgumentError("ndims(data) [$(ndims(data))] must be equal to length(inds) [$(length(inds))]"))
         end
@@ -26,29 +26,18 @@ struct Tensor{T,N,A<:AbstractArray{T,N}} <: AbstractArray{T,N}
         return new{T,N,A}(data, inds)
     end
 
-    function Tensor(data::A, inds::AbstractVector{I}) where {T,N,A<:AbstractArray{T,N},I<:Index}
-        return Tensor(data, ImmutableVector(inds))
+    """
+        Tensor(data::A, inds) where {T,N,A<:AbstractArray{T,N}}
+    """
+    function Tensor(data::A, inds) where {T,N,A<:AbstractArray{T,N}}
+        return Tensor(data, IndexList(inds))
     end
 end
 
-"""
-    Tensor(data::AbstractArray{T,N}, inds::AbstractVector{Index})
-    Tensor(data::AbstractArray{T,N}, inds::NTuple{N,Index}) where {T,N}
-    Tensor(data::AbstractArray{T,0}) where {T}
-    Tensor(data::Number)
+Tensor(data::A, inds::Base.AbstractVecOrTuple{Symbol}) where {A<:AbstractArray} = Tensor(data, IndexList(Index.(inds)))
 
-Construct a tensor with the given data and indices.
-"""
-Tensor(data::A, inds::NTuple{N}) where {T,N,A<:AbstractArray{T,N}} = Tensor{T,N,A}(data, collect(inds))
-Tensor(data::AbstractArray{T,0}) where {T} = Tensor(data, Index[])
+Tensor(data::AbstractArray{T,0}) where {T} = Tensor(data, IndexList())
 Tensor(data::Number) = Tensor(fill(data))
-Tensor{T,N,A}(data::A, inds::AbstractVector) where {T,N,A<:AbstractArray{T,N}} = Tensor(data, ImmutableVector(inds))
-
-# useful methods
-Tensor(data::AbstractArray, inds::Vector{Symbol}) = Tensor(data, map(Index, inds))
-function Tensor{T,N,A}(data::A, inds::Vector{Symbol}) where {T,N,A<:AbstractArray{T,N}}
-    Tensor(data, ImmutableVector(map(Index, inds)))
-end
 
 Tensor(x::Tensor) = x
 Tensor{T,N,A}(x::Tensor{T,N,A}) where {T,N,A} = x
@@ -345,7 +334,7 @@ Base.permutedims(t::Tensor{T,0}, ::Base.AbstractVecOrTuple{Index}) where {T} = t
 Base.permutedims!(dest::Tensor, src::Tensor, perm) = permutedims!(parent(dest), parent(src), perm)
 
 function Base.permutedims(t::Tensor{T}, perm::Base.AbstractVecOrTuple{Index}) where {T}
-    perm = map(i -> findfirst(==(i), inds(t)), perm)
+    perm = Int[findfirst(is_equal_label(ind), inds(t)) for ind in perm]
     return permutedims(t, perm)
 end
 

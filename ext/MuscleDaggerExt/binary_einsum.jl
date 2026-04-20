@@ -9,23 +9,20 @@ function Muscle.binary_einsum(::Muscle.BackendDagger, inds_c, a, b)
 end
 
 struct BinaryEinsum{T,N} <: ArrayOp{T,N}
-    ic::Muscle.ImmutableVector{Index}
+    ic::IndexList
     a::ArrayOp
-    ia::Muscle.ImmutableVector{Index}
+    ia::IndexList
     b::ArrayOp
-    ib::Muscle.ImmutableVector{Index}
+    ib::IndexList
 
     function BinaryEinsum(ic, a, ia, b, ib)
         allunique(ia) || throw(ErrorException("ia must have unique indices"))
         allunique(ib) || throw(ErrorException("ib must have unique indices"))
         allunique(ic) || throw(ErrorException("ic must have unique indices"))
         ic ⊆ ia ∪ ib || throw(ErrorException("ic must be a subset of ia ∪ ib"))
-        return new{Base.promote_eltype(a, b),length(ic)}(to_imm_vector(ic), a, to_imm_vector(ia), b, to_imm_vector(ib))
+        return new{Base.promote_eltype(a, b),length(ic)}(IndexList(ic), a, IndexList(ia), b, IndexList(ib))
     end
 end
-
-to_imm_vector(x::AbstractVector{<:Index}) = Muscle.ImmutableVector{Index}(x)
-to_imm_vector(x::Muscle.ImmutableVector{<:Index}) = x
 
 function BinaryEinsum(ic, a::Tensor, b::Tensor)
     BinaryEinsum(ic, Dagger._to_darray(parent(a)), inds(a), Dagger._to_darray(parent(b)), inds(b))
