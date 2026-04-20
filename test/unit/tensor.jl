@@ -156,7 +156,7 @@ end
     @test tensor[:i => 2, 0 => 1] == 3
     @test tensor[:i => 2, 0 => 2] == 4
 
-    # special case for `Index{Symbol}`
+    # special case for `Label(::Symbol)`
     @testset let tensor = replace(tensor, Index(0) => Index(:j))
         @test tensor[i=1, j=1] == 1
         @test tensor[i=1, j=2] == 2
@@ -404,7 +404,7 @@ end
     @test @view(tensor[:i => 2, 0 => 1]) == Tensor(fill(3))
     @test @view(tensor[:i => 2, 0 => 2]) == Tensor(fill(4))
 
-    # special case for `Index{Symbol}`
+    # special case for `Label(::Symbol)`
     @testset let tensor = replace(tensor, Index(0) => Index(:j))
         @test @view(tensor[i=1, j=1]) == Tensor(fill(1))
         @test @view(tensor[i=1, j=2]) == Tensor(fill(2))

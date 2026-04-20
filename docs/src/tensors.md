@@ -61,12 +61,6 @@ You can create a `Tensor` by passing an `AbstractArray` and a `Vector` or `Tuple
 t = Tensor(rand(3,5,2), [Index(:i), Index(:j), Index(:k)])
 ```
 
-!!! tip
-    For backward compatibility, if all the indices are `Index{Symbol}`s, you can directly pass a list of `Symbols` to the `Tensor` constructor. For example,
-    ```@repl tensor
-    Tensor(rand(3,2), [:i, :j])
-    ```
-
 Use `parent` and `inds` to access the underlying array and indices respectively.
 
 ```@repl tensor

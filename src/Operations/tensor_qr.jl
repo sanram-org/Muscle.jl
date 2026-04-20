@@ -12,7 +12,7 @@ Perform QR factorization on a tensor. Either `inds_q` or `inds_r` must be specif
 
   - `inds_q`: left indices to be used in the QR factorization. Defaults to all indices of `t` except `inds_r`.
   - `inds_r`: right indices to be used in the QR factorization. Defaults to all indices of `t` except `inds_q`.
-  - `ind_virtual`: name of the virtual bond. Defaults to a random `Index{Symbol}`.
+  - `ind_virtual`: name of the virtual bond. Defaults to a random `Index`.
 """
 function tensor_qr_thin end
 function tensor_qr_thin! end
