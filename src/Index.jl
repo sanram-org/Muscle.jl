@@ -84,12 +84,14 @@ function Base.convert(::Type{ImmutableArray{Index,N}}, x::ImmutableArray{I,N}) w
     return ImmutableArray{Index,N}(x.data)
 end
 
-function factorinds(all_inds, left_inds::Vector{Index}, right_inds::Vector{Index})
+function factorinds(all_inds::AbstractVector{Index}, left_inds::Vector{Index}, right_inds::Vector{Index})
     if !isdisjoint(left_inds, right_inds)
         throw(ArgumentError("left ($left_inds) and right $(right_inds) indices must be disjoint"))
     end
 
-    left_inds, right_inds = if isempty(left_inds)
+    left_inds, right_inds = if isempty(left_inds) && isempty(right_inds) && length(all_inds) == 2
+        (all_inds[1:1], all_inds[2:2])
+    elseif isempty(left_inds)
         (setdiff(all_inds, right_inds), right_inds)
     elseif isempty(right_inds)
         (left_inds, setdiff(all_inds, left_inds))
