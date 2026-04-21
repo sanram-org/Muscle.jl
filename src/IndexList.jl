@@ -12,7 +12,7 @@ Base.@nospecializeinfer function ind_vect(@nospecialize(inds::Vararg{Index}))
     return vec
 end
 
-function ind_vect(inds::Vector{Symbol})
+function ind_vect(inds::Base.AbstractVecOrTuple{Symbol})
     vec = Vector{Index}(undef, length(inds))
     for i in eachindex(inds)
         @inbounds vec[i] = Index(inds[i])

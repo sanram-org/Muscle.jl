@@ -12,7 +12,7 @@ using OMEinsum
 # TODO test unary einsum
 # TODO test scalar × tensor
 @testset "conj" begin
-    A = Tensor(rand(ComplexF64, 2, 3), (:i, :j))
+    A = Tensor(rand(ComplexF64, 2, 3), [Index(:i), Index(:j)])
     Are = adapt(ConcreteRArray, A)
 
     C = conj(A)
@@ -23,8 +23,8 @@ end
 
 @testset "binary_einsum" begin
     @testset "matrix multiplication - eltype=$T" for T in [Float64, ComplexF64]
-        A = Tensor(rand(T, 2, 3), (:i, :j))
-        B = Tensor(rand(T, 3, 4), (:j, :k))
+        A = Tensor(rand(T, 2, 3), [Index(:i), Index(:j)])
+        B = Tensor(rand(T, 3, 4), [Index(:j), Index(:k)])
         Are = adapt(ConcreteRArray, A)
         Bre = adapt(ConcreteRArray, B)
 
@@ -53,8 +53,8 @@ end
     end
 
     @testset "inner product - eltype=$T" for T in [Float64, ComplexF64]
-        A = Tensor(rand(T, 3, 4), (:i, :j))
-        B = Tensor(rand(T, 4, 3), (:j, :i))
+        A = Tensor(rand(T, 3, 4), [Index(:i), Index(:j)])
+        B = Tensor(rand(T, 4, 3), [Index(:j), Index(:i)])
         C = binary_einsum(A, B)
 
         Are = adapt(ConcreteRArray, A)
@@ -65,8 +65,8 @@ end
     end
 
     @testset "outer product - eltype=$T" for T in [Float64, ComplexF64]
-        A = Tensor(rand(T, 2, 2), (:i, :j))
-        B = Tensor(rand(T, 2, 2), (:k, :l))
+        A = Tensor(rand(T, 2, 2), [Index(:i), Index(:j)])
+        B = Tensor(rand(T, 2, 2), [Index(:k), Index(:l)])
         C = binary_einsum(A, B)
 
         Are = adapt(ConcreteRArray, A)
@@ -77,8 +77,8 @@ end
     end
 
     @testset "manual - eltype=$T" for T in [Float64, ComplexF64]
-        A = Tensor(rand(T, 2, 3, 4), (:i, :j, :k))
-        B = Tensor(rand(T, 4, 5, 3), (:k, :l, :j))
+        A = Tensor(rand(T, 2, 3, 4), [Index(:i), Index(:j), Index(:k)])
+        B = Tensor(rand(T, 4, 5, 3), [Index(:k), Index(:l), Index(:j)])
         Are = adapt(ConcreteRArray, A)
         Bre = adapt(ConcreteRArray, B)
 
@@ -98,10 +98,10 @@ end
     end
 
     @testset "multiple tensors - eltype=$T" for T in [Float64, ComplexF64]
-        A = Tensor(rand(T, 2, 3, 4), (:i, :j, :k))
-        B = Tensor(rand(T, 4, 5, 3), (:k, :l, :j))
-        C = Tensor(rand(T, 5, 6, 2), (:l, :m, :i))
-        D = Tensor(rand(T, 6, 7, 2), (:m, :n, :i))
+        A = Tensor(rand(T, 2, 3, 4), [Index(:i), Index(:j), Index(:k)])
+        B = Tensor(rand(T, 4, 5, 3), [Index(:k), Index(:l), Index(:j)])
+        C = Tensor(rand(T, 5, 6, 2), [Index(:l), Index(:m), Index(:i)])
+        D = Tensor(rand(T, 6, 7, 2), [Index(:m), Index(:n), Index(:i)])
 
         Are = adapt(ConcreteRArray, A)
         Bre = adapt(ConcreteRArray, B)
@@ -129,8 +129,8 @@ end
     @testset "inner product" begin
         # inner-product of vectors
         @testset let
-            A = Tensor([1.0, 2.0], (:i,))
-            B = Tensor([3.0, 4.0], (:i,))
+            A = Tensor([1.0, 2.0], [Index(:i)])
+            B = Tensor([3.0, 4.0], [Index(:i)])
             Are = adapt(ConcreteRArray, A)
             Bre = adapt(ConcreteRArray, B)
 
@@ -143,8 +143,8 @@ end
 
         # inner-product of matrices
         @testset let
-            A = Tensor([1.0 2.0; 3.0 4.0], (:i, :k))
-            B = Tensor([5.0 6.0; 7.0 8.0], (:i, :k))
+            A = Tensor([1.0 2.0; 3.0 4.0], [Index(:i), Index(:k)])
+            B = Tensor([5.0 6.0; 7.0 8.0], [Index(:i), Index(:k)])
             Are = adapt(ConcreteRArray, A)
             Bre = adapt(ConcreteRArray, B)
 
@@ -157,8 +157,8 @@ end
 
         # inner-product of complex matrices
         @testset let
-            A = Tensor(ComplexF64[1.0 2.0; 3.0im 4.0], (:i, :k))
-            B = Tensor(ComplexF64[5.0 6.0im; 7.0 8.0], (:i, :k))
+            A = Tensor(ComplexF64[1.0 2.0; 3.0im 4.0], [Index(:i), Index(:k)])
+            B = Tensor(ComplexF64[5.0 6.0im; 7.0 8.0], [Index(:i), Index(:k)])
             Are = adapt(ConcreteRArray, A)
             Bre = adapt(ConcreteRArray, B)
 
