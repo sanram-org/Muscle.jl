@@ -17,7 +17,7 @@ makedocs(;
     format=Documenter.HTML(;
         prettyurls=get(ENV, "CI", "false") == "true",
         canonical="https://bsc-quantic.github.io/Muscle.jl",
-        edit_link="master",
+        edit_link="main",
         assets=String[],
     ),
     pages=[
@@ -29,4 +29,4 @@ makedocs(;
     ],
 )
 
-deploydocs(; repo="github.com/bsc-quantic/Muscle.jl", devbranch="master")
+deploydocs(; repo="github.com/bsc-quantic/Muscle.jl", devbranch="main")
