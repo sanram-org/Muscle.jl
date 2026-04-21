@@ -14,7 +14,11 @@
 Muscle.jl is a library for manipulation of tensors. It provides a `Tensor` type which wraps together an `AbstractArray` and a list of `Index`.
 
 For example, the following tensor,
-$$T_{ijk} = \begin{cases}~~~1 \qquad &i=j=k \\ -1 \qquad &\mathrm{otherwise}\end{cases}$$
+
+$$T_{ijk} = \begin{cases}
+1 \quad &i = j = k \\
+-1 \quad &\mathrm{otherwise}
+\end{cases}$$
 
 can easily be created as,
 
