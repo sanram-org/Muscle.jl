@@ -26,7 +26,7 @@ end
 
 function Base.convert(::Type{ITensor}, tt::Tensor; iinds=Dict{Symbol,Index}())
     indices = map(Muscle.inds(tt)) do i
-        haskey(iinds, i) ? iinds[i] : Index(size(tt, i), tagize(i.tag)) #TODO check I added a .tag here 
+        haskey(iinds, i) ? iinds[i] : Index(size(tt, i), tagize(Muscle.label(i))) #TODO check I added a .tag here 
     end
     return ITensor(parent(tt), indices)
 end
