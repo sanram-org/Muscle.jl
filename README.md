@@ -23,7 +23,8 @@ can easily be created as,
 ```julia
 T = Tensor(zeros(2,2,2), [Index(:i), Index(:j), Index(:k)]);
 
-for (i,j,k) in eachindex(IndexCartesian(), T)
+for I in eachindex(IndexCartesian(), T)
+    (i,j,k) = Tuple(I)
     T[i,j,k] = i == j == k ? 1 : -1
 end
 ```
@@ -57,27 +58,135 @@ julia> binary_einsum(a, b)
  7.0+0.0im  7.0+0.0im
 ```
 
+## Variance behavior
+
+An `Index` can be `Covariant`, `Contravariant` or `Invariant` (default).
+
+```julia
+julia> Index(:i)
+index<i>
+
+julia> Index(:j, Covariant)
+index<j↓>
+
+julia> Index(:k, Contravariant)
+index<k↑>
+```
+
+> [!IMPORTANT]
+> While variance information is important for basis change, this functionality is yet a work in progress. Currently all indices are treated as `Invariant`.
+
 ## Operations
+
+This is a list of primitive operations that Muscle can dispatch to different backends.
 
 #### `hadamard(!)`
 
 a.k.a. element-wise multiplication.
 
+```julia
+julia> a = Tensor([1 2; 3 4], [Index(:i), Index(:j)]);
+
+julia> hadamard(a, a)
+2×2 Tensor(::Matrix{Int64}) with signature ij:
+ 1   4
+ 9  16
+```
+
 #### `unary_einsum(!)`
+
+Can be used directly through `Muscle.einsum(!)`.
 
 #### `binary_einsum(!)`
 
-Some backends allow for batching indices.
+Tensor contraction. Can be used directly through `Muscle.einsum(!)`.
+
+```julia
+julia> a = Tensor([1 2; 3 4], [Index(:i), Index(:j)]);
+
+julia> b = Tensor(Float64[-1 8; 3 5], [Index(:j), Index(:k)]);
+
+julia> binary_einsum(a, b)
+2×2 Tensor(::Matrix{Float64}) with signature ij:
+ 5.0  18.0
+ 9.0  44.0
+```
+
+Some backends allow for batching indices. In particular, Reactant.jl and OMEinsum.jl.
 
 #### `tensor_qr_thin(!)`
 
+Matrix QR adapted to n-order tensors with left and right indices.
+
+```julia
+julia> a = Tensor([1 2; 3 4], [Index(:i), Index(:j)]);
+
+julia> q, r = tensor_qr_thin(a; ind_virtual=Index(:v))
+([-0.316227766016838 -0.9486832980505138; -0.9486832980505138 0.316227766016838], [-3.1622776601683795 -4.427188724235731; 0.0 -0.6324555320336751])
+
+julia> q
+2×2 Tensor(::Matrix{Float64}) with signature ij:
+ -0.316228  -0.948683
+ -0.948683   0.316228
+
+julia> r
+2×2 Tensor(::Matrix{Float64}) with signature ij:
+ -3.16228  -4.42719
+  0.0      -0.632456
+```
+
 #### `tensor_svd_thin(!)`
 
-#### `tensor_trunc_thin(!)`
+Matrix Singular Value Decomposition (SVD) adapted to n-order tensors with left and right indices.
+
+```julia
+julia> a = Tensor([1 2; 3 4], [Index(:i), Index(:j)]);
+
+julia> u,s,v = tensor_svd_thin(a)
+([-0.40455358483375703 -0.9145142956773042; -0.9145142956773045 0.4045535848337568], [5.464985704219043, 0.3659661906262574], [-0.5760484367663209 0.8174155604703631; -0.8174155604703631 -0.5760484367663209])
+
+julia> u
+2×2 Tensor(::Matrix{Float64}) with signature ij:
+ -0.404554  -0.914514
+ -0.914514   0.404554
+
+julia> s
+2-element Tensor(::Vector{Float64}) with signature i:
+ 5.464985704219043
+ 0.3659661906262574
+
+julia> v
+2×2 Tensor(reshape(transpose(::Matrix{Float64}), 2, 2)) with signature ij:
+ -0.576048   0.817416
+ -0.817416  -0.576048
+```
+
+#### `tensor_svd_trunc(!)`
+
+Matrix Truncated Singular Value Decomposition (t-SVD) adapted to n-order tensors with left and right indices.
 
 #### `tensor_eigen_thin(!)`
 
+Matrix eigendecomposition adapted to n-order tensors with left and right indices.
+
+```julia
+julia> λ, U = tensor_eigen_thin(a)
+([-0.3722813232690143, 5.372281323269014], [-0.8245648401323938 -0.4159735579192842; 0.5657674649689923 -0.9093767091321241])
+
+julia> λ
+2-element Tensor(::Vector{Float64}) with signature i:
+ -0.3722813232690143
+  5.372281323269014
+
+julia> U
+2×2 Tensor(::Matrix{Float64}) with signature ij:
+ -0.824565  -0.415974
+  0.565767  -0.909377
+```
+
 #### `simple_update(!)`
+
+A common operation performed in time-evolution algorithms.
 
 Although most backends see it as a composite operation (i.e. they will call other operations), cuTensorNet offers it as a primitive.
 
