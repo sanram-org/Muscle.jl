@@ -2,7 +2,7 @@ module Operations
 
 using ArgCheck
 
-using ..Muscle: Tensor, Index, inds
+using ..Muscle: Tensor, Index, inds, findperm
 using ..Muscle: Platform, platform, promote_platform, PlatformHost, PlatformCUDA, PlatformReactant, PlatformDagger
 using ..Muscle: Backend, BACKEND_LOCK, is_backend_available
 using ..Muscle: BackendBase, BackendOMEinsum, BackendCuTENSOR, BackendCuTensorNet, BackendReactant, BackendDagger
