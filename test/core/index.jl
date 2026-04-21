@@ -1,6 +1,6 @@
 using Test
 using Muscle
-using Muscle: Invariant, variance, label, is_equal_label
+using Muscle: Invariant, variance, Label, label, is_equal_label
 
 @test adjoint(Covariant) == Contravariant
 @test adjoint(Contravariant) == Covariant
