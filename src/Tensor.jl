@@ -337,7 +337,7 @@ end
 
 """
     Base.view(tensor::Tensor, i...)
-    Base.view(tensor::Tensor, inds::Pair{<:Index,<:Any}...)
+    Base.view(tensor::Tensor, inds::Pair{Index,<:Any}...)
 
 Return a view of the tensor with the given indices. If a `Pair` is given, the index is replaced by the value of the pair.
 

@@ -1,10 +1,10 @@
 abstract type AbstractIndexList <: AbstractVector{Index} end
 
 ind_vect(inds::Vector{Index}) = inds
-Base.@nospecializeinfer ind_vect(@nospecialize(inds::AbstractVector{<:Index})) = Vector{Index}(inds)
+Base.@nospecializeinfer ind_vect(@nospecialize(inds::AbstractVector{Index})) = Vector{Index}(inds)
 Base.@nospecializeinfer ind_vect(@nospecialize(inds::Tuple)) = ind_vect(inds...)
 
-Base.@nospecializeinfer function ind_vect(@nospecialize(inds::Vararg{<:Index}))
+Base.@nospecializeinfer function ind_vect(@nospecialize(inds::Vararg{Index}))
     vec = Vector{Index}(undef, length(inds))
     for i in eachindex(inds)
         @inbounds vec[i] = inds[i]
