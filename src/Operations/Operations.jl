@@ -21,7 +21,7 @@ include("tensor_qr.jl")
 export tensor_qr_thin, tensor_qr_thin!
 
 include("tensor_svd.jl")
-export tensor_svd_thin, tensor_svd_thin!
+export tensor_svd_thin, tensor_svd_thin!, tensor_svd_trunc, tensor_svd_trunc!
 
 include("tensor_eigen.jl")
 export tensor_eigen_thin, tensor_eigen_thin!
@@ -41,6 +41,8 @@ const AVAILABLE_BACKENDS_FOR_OP = Dict{Function, Vector{Backend}}([
     tensor_qr_thin! => Backend[BackendBase()],
     tensor_svd_thin => Backend[BackendBase()],
     tensor_svd_thin! => Backend[BackendBase()],
+    tensor_svd_trunc => Backend[BackendBase()],
+    tensor_svd_trunc! => Backend[BackendBase()],
     tensor_eigen_thin => Backend[BackendBase()],
     tensor_eigen_thin! => Backend[BackendBase()],
     tensor_bieigen_thin => Backend[BackendBase()],
@@ -83,6 +85,12 @@ const DEFAULT_BACKEND = Dict{Tuple{Function, Platform}, Backend}([
     (tensor_svd_thin!, PlatformHost()) => BackendBase(),
     (tensor_svd_thin, PlatformCUDA()) => BackendCuTensorNet(),
     (tensor_svd_thin!, PlatformCUDA()) => BackendCuTensorNet(),
+
+    # tensor_svd_trunc
+    (tensor_svd_trunc, PlatformHost()) => BackendBase(),
+    (tensor_svd_trunc!, PlatformHost()) => BackendBase(),
+    (tensor_svd_trunc, PlatformCUDA()) => BackendCuTensorNet(),
+    (tensor_svd_trunc!, PlatformCUDA()) => BackendCuTensorNet(),
 
     # tensor_eigen_thin
     (tensor_eigen_thin, PlatformHost()) => BackendBase(),

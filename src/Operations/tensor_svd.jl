@@ -186,7 +186,7 @@ function tensor_svd_trunc(
     # use `threshold` to truncate the singular values
     if !isnothing(threshold)
         # threshold is relative threshold
-        threshold = norm(s) * threshold
+        threshold = LinearAlgebra.norm(s) * threshold
         k = something(findfirst(<(threshold), view(s, 1:k)), k)
     end
 
