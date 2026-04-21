@@ -24,7 +24,7 @@ end
 function muscle_skip_rewrites()
     Reactant.@skip_rewrite_func Muscle.binary_einsum
     Reactant.@skip_rewrite_func Muscle.nonunique
-    Reactant.@skip_rewrite_type Type{Muscle.Index}
+    Reactant.@skip_rewrite_type Muscle.Index
     Reactant.@skip_rewrite_type Type{<:Muscle.Tensor}
 end
 
