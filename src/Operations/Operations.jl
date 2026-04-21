@@ -30,6 +30,12 @@ export tensor_bieigen_thin, tensor_bieigen_thin!
 include("simple_update.jl")
 export simple_update, simple_update!
 
+einsum(a::Tensor; kwargs...) = unary_einsum(a; kwargs...)
+einsum(a::Tensor, b::Tensor; kwargs...) = binary_einsum(a, b; kwargs...)
+einsum(c::Tensor, a::Tensor; kwargs...) = unary_einsum!(c, a; kwargs...)
+einsum!(c::Tensor, a::Tensor, b::Tensor; kwargs...) = binary_einsum!(c, a, b; kwargs...)
+export einsum, einsum!
+
 const AVAILABLE_BACKENDS_FOR_OP = Dict{Function, Vector{Backend}}([
     hadamard => Backend[BackendBase()],
     hadamard! => Backend[BackendBase()],
