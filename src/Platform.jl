@@ -31,7 +31,7 @@ promote_platform_result(::Missing, @nospecialize(ba::Platform)) = ba
 promote_platform_result(@nospecialize(ab::Platform), @nospecialize(ba::Platform)) = (@assert(ab == ba); ab)
 
 promote_platform_rule(@nospecialize(::Platform), @nospecialize(::Platform)) = missing
-promote_platform_rule(::PlatformHost, ::PlatformHost) = PlatformHost()
+promote_platform_rule(::P, ::P) where {P <: Platform} = P()
 promote_platform_rule(::PlatformHost, ::PlatformCUDA) = PlatformCUDA()
 promote_platform_rule(::PlatformHost, ::PlatformReactant) = PlatformReactant()
 promote_platform_rule(::PlatformHost, ::PlatformDagger) = PlatformDagger()
