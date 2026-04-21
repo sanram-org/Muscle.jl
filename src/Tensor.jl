@@ -169,11 +169,11 @@ dim(t::Tensor, i::Symbol) = dim(t, Index(i))
 dim(t::Tensor, i::Index) = findfirst(==(i), inds(t))
 
 # Iteration interface
-Base.IteratorSize(T::Type{Tensor}) = Iterators.IteratorSize(parent_type(T))
-Base.IteratorEltype(T::Type{Tensor}) = Iterators.IteratorEltype(parent_type(T))
+Base.IteratorSize(::Type{Tensor{T,N,A}}) where {T,N,A} = Base.IteratorSize(A)
+Base.IteratorEltype(::Type{Tensor{T,N,A}}) where {T,N,A} = Base.IteratorEltype(A)
 
 # Indexing interface
-Base.IndexStyle(T::Type{<:Tensor}) = IndexStyle(parent_type(T))
+Base.IndexStyle(::Type{Tensor{T,N,A}}) where {T,N,A} = IndexStyle(A)
 
 """
     Base.getindex(::Tensor, i...)
@@ -268,7 +268,7 @@ Base.stride(t::Tensor, i::Integer) = stride(parent(t), i)
 
 Base.unsafe_convert(::Type{Ptr{T}}, t::Tensor{T}) where {T} = Base.unsafe_convert(Ptr{T}, parent(t))
 
-Base.elsize(T::Type{<:Tensor}) = Base.elsize(parent_type(T))
+Base.elsize(::Type{Tensor{T,N,A}}) where {T,N,A} = Base.elsize(A)
 
 # Broadcasting
 Base.BroadcastStyle(::Type{T}) where {T<:Tensor} = ArrayStyle{T}()
