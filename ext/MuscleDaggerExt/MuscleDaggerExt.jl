@@ -4,8 +4,8 @@ using Muscle
 using Dagger
 
 function __init__()
-    Muscle.register_backend!(BackendDagger())
-    Muscle.Operations.register_backend_for_op!(Muscle.Operations.binary_einsum, BackendDagger())
+    Muscle.register_backend!(Muscle.BackendDagger())
+    Muscle.Operations.register_backend_for_op!(Muscle.Operations.binary_einsum, Muscle.BackendDagger())
 end
 
 Muscle.platform(::Dagger.DArray) = Muscle.PlatformDagger()
