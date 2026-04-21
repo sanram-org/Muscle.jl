@@ -9,7 +9,12 @@ il = IndexList([Index(:a), Index(:b), Index(:c)])
 @test il[1] == Index(:a)
 @test il[2] == Index(:b)
 @test il[3] == Index(:c)
-@test similar(il) == MutableIndexList{Index}()
+
+let il = similar(il)
+    @test il isa MutableIndexList
+    @test length(il) == 3
+    @test all(i -> !isassigned(il, i), eachindex(il))
+end
 
 mil = MutableIndexList([Index(:a), Index(:b), Index(:c)])
 @test collect(mil) == [Index(:a), Index(:b), Index(:c)]
@@ -18,7 +23,12 @@ mil = MutableIndexList([Index(:a), Index(:b), Index(:c)])
 @test mil[1] == Index(:a)
 @test mil[2] == Index(:b)
 @test mil[3] == Index(:c)
-@test similar(mil) == MutableIndexList{Index}()
+
+let mil = similar(mil)
+    @test mil isa MutableIndexList
+    @test length(mil) == 3
+    @test all(i -> !isassigned(mil, i), eachindex(mil))
+end
 
 @test findperm([Index(:a), Index(:b), Index(:c)], [Index(:b), Index(:c), Index(:a)]) == [3, 1, 2]
 
