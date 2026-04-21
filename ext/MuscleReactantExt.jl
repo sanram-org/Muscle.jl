@@ -14,6 +14,18 @@ function __init__()
     Muscle.Operations.register_backend_for_op!(Muscle.Operations.unary_einsum!, BackendReactant())
     Muscle.Operations.register_backend_for_op!(Muscle.Operations.binary_einsum, BackendReactant())
     Muscle.Operations.register_backend_for_op!(Muscle.Operations.binary_einsum!, BackendReactant())
+
+    muscle_skip_rewrites()
+end
+
+# This function is used to skip rewriting of certain functions and type constructors in Reactant.jl, which is necessary
+# for overlaying methods called dynamically. By skipping the rewrite where we know it's ok, Julia compilation should 
+# take less time. It must be called on the top level for precompilation and in `__init__` for runtime.
+function muscle_skip_rewrites()
+    Reactant.@skip_rewrite_func Muscle.binary_einsum
+    Reactant.@skip_rewrite_func Muscle.nonunique
+    Reactant.@skip_rewrite_type Type{Muscle.Index}
+    Reactant.@skip_rewrite_type Type{<:Muscle.Tensor}
 end
 
 for T in [TracedRNumber, ConcreteRNumber, TracedRArray, ConcreteRArray, AnyTracedRArray, AnyConcreteRArray]
@@ -143,20 +155,6 @@ end
 # fixes issue with default `conj(x::AbstractArray) = x` method from Base (it might be overlayed in Reactant.jl)
 Base.conj(@nospecialize(x::Tensor{<:TracedRNumber})) = x
 Base.conj(@nospecialize(x::Tensor{TracedRNumber{T}})) where {T<:Complex} = Tensor(conj(parent(x)), inds(x))
-
-# This function is used to skip rewriting of certain functions and type constructors in Reactant.jl, which is necessary
-# for overlaying methods called dynamically. By skipping the rewrite where we know it's ok, Julia compilation should 
-# take less time. It must be called on the top level for precompilation and in `__init__` for runtime.
-function muscle_skip_rewrites()
-    Reactant.@skip_rewrite_func Muscle.binary_einsum
-    Reactant.@skip_rewrite_func Muscle.nonunique
-    Reactant.@skip_rewrite_type Type{<:Muscle.Index}
-    Reactant.@skip_rewrite_type Type{<:Muscle.Tensor}
-end
-
-function __init__()
-    muscle_skip_rewrites()
-end
 
 # @static if Reactant.Reactant_jll.is_available() && Reactant.precompilation_supported()
 #     @setup_workload begin
