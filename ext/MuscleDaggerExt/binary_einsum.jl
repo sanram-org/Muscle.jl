@@ -1,4 +1,5 @@
 using Muscle
+using Muscle: IndexList
 using Dagger: Dagger, ArrayOp, Context, ArrayDomain, EagerThunk, DArray
 using LinearAlgebra
 
