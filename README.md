@@ -11,6 +11,9 @@
 [![Build Status](https://github.com/mofeing/Muscle.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/mofeing/Muscle.jl/actions/workflows/CI.yml?query=branch%3Amain)
 <!-- [![codecov](https://codecov.io/gh/mofeing/Muscle.jl/branch/main/graph/badge.svg?token=PG757H00RR)](https://codecov.io/gh/mofeing/Muscle.jl) -->
 
+> [!NOTE]
+> This is an updated and maintained fork of [bsc-quantic/Muscle.jl](https://github.com/bsc-quantic/Muscle.jl).
+
 Muscle.jl is a library for manipulation of tensors. It provides a `Tensor` type which wraps together an `AbstractArray` and a list of `Index`.
 
 For example, the following tensor,
