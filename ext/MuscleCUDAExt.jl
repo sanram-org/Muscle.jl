@@ -9,8 +9,7 @@ function Base.__init__()
     Muscle.Operations.register_backend_for_op!(Muscle.Operations.binary_einsum, BackendCuTENSOR())
 end
 
-Base.@nospecializeinfer Muscle.Platform(@nospecialize(::Type{<:CuArray})) = Muscle.PlatformCUDA()
-Base.@nospecializeinfer Muscle.Platform(@nospecialize(::CuArray)) = Muscle.PlatformCUDA()
+Base.@nospecializeinfer Muscle.platform(@nospecialize(::CuArray)) = Muscle.PlatformCUDA()
 
 ## `CUDA` (uses cuTENSOR)
 function Muscle.binary_einsum(::Muscle.BackendCuTENSOR, inds_c, a, inds_a, b, inds_b; kwargs...)

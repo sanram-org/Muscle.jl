@@ -1,7 +1,6 @@
 using Base: @propagate_inbounds
 using Base.Broadcast: Broadcasted, ArrayStyle
 using LinearAlgebra
-using Adapt
 
 """
     Tensor{T,N,A<:AbstractArray{T,N}} <: AbstractArray{T,N}
@@ -56,7 +55,6 @@ Return the indices of the `Tensor`.
 inds(x::Tensor) = x.inds
 
 Base.copy(t::Tensor{T,N,<:SubArray{T,N}}) where {T,N} = Tensor(copy(parent(t)), copy(inds(t)))
-Adapt.adapt_structure(to, x::Tensor) = Tensor(adapt(to, parent(x)), inds(x))
 
 arraytype(::Type{Tensor{T,N,A}}) where {T,N,A} = A
 arraytype(::T) where {T<:Tensor} = arraytype(T)
@@ -160,11 +158,6 @@ Base.replace(t::Tensor, old_new::Pair...) = Tensor(parent(t), replace(inds(t), o
 Return the underlying array of the tensor.
 """
 Base.parent(t::Tensor) = t.data
-Adapt.parent_type(::Type{Tensor{T,N,A}}) where {T,N,A} = A
-Adapt.parent_type(::Type{Tensor{T,N}}) where {T,N} = AbstractArray{T,N}
-Adapt.parent_type(::Type{Tensor{T}}) where {T} = AbstractArray{T}
-Adapt.parent_type(::Type{Tensor}) = AbstractArray
-Adapt.parent_type(::T) where {T<:Tensor} = parent_type(T)
 
 """
     dim(tensor::Tensor, i)

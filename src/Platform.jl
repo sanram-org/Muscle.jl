@@ -1,4 +1,3 @@
-using Adapt
 using ArgCheck
 
 abstract type Platform end
@@ -8,10 +7,9 @@ struct PlatformCUDA <: Platform end
 struct PlatformReactant <: Platform end
 struct PlatformDagger <: Platform end
 
-platform(::T) where {T<:AbstractArray} = platform(T)
-platform(::Type{<:Array}) = PlatformHost()
-platform(::Type{T}) where {T<:WrappedArray} = platform(Adapt.unwrap_type(T))
-platform(x::Tensor) = platform(parent_type(x))
+platform(x::AbstractArray) = platform(parent(x))
+platform(x::Tensor) = platform(parent(x))
+platform(::Array) = PlatformHost()
 
 function promote_platform(a::Platform, b::Platform)
     ab = promote_platform_rule(a, b)

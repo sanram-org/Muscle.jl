@@ -17,15 +17,9 @@ function __init__()
 end
 
 for T in [TracedRNumber, ConcreteRNumber, TracedRArray, ConcreteRArray, AnyTracedRArray, AnyConcreteRArray]
-    @eval begin
-        Base.@nospecializeinfer function Muscle.Platform(@nospecialize(::Type{$T}))
+    @eval Base.@nospecializeinfer function Muscle.platform(@nospecialize(::$T))
             Muscle.PlatformReactant()
         end
-
-        Base.@nospecializeinfer function Muscle.Platform(@nospecialize(::$T))
-            Muscle.PlatformReactant()
-        end
-    end
 end
 
 # we specify `mode` and `track_numbers` types due to ambiguity
