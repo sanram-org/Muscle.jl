@@ -1,4 +1,4 @@
-# Muscle.jl
+# <img alt="" width="7%" src="docs/src/assets/logo.svg"> Muscle.jl
 
 > :muscle: Muscles power Tensors :muscle:
 
@@ -7,8 +7,3 @@
 [![Build Status](https://github.com/mofeing/Muscle.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/mofeing/Muscle.jl/actions/workflows/CI.yml?query=branch%3Amain)
 <!-- [![codecov](https://codecov.io/gh/mofeing/Muscle.jl/branch/main/graph/badge.svg?token=PG757H00RR)](https://codecov.io/gh/mofeing/Muscle.jl) -->
 
-<picture>
-    <source media="(prefers-color-theme: light)" srcset="docs/src/assets/logo.svg">
-    <source media="(prefers-color-theme: dark)" srcset="docs/src/assets/logo-dark.svg">
-    <img alt="" src="docs/src/assets/logo.svg">
-</picture>
