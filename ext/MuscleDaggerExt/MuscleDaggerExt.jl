@@ -8,7 +8,7 @@ function __init__()
     Muscle.Operations.register_backend_for_op!(Muscle.Operations.binary_einsum, BackendDagger())
 end
 
-Muscle.Domain(::Type{<:Dagger.DArray}) = Muscle.PlatformDagger()
+Muscle.platform(::Dagger.DArray) = Muscle.PlatformDagger()
 
 Dagger.domainchunks(t::Tensor) = Dagger.domainchunks(parent(t))
 
