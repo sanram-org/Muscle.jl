@@ -23,7 +23,7 @@ function Muscle.unary_einsum!(::BackendOMEinsum, y, x)
     @argcheck inds(y) ⊆ inds(x) "Output indices must be a subset of input indices"
 
     size_dict = Dict(inds(x) .=> size(x))
-    einsum!((inds(x),), inds(y), (parent(x),), parent(y), true, false, size_dict)
+    OMEinsum.einsum!((inds(x),), inds(y), (parent(x),), parent(y), true, false, size_dict)
 
     return y
 end
