@@ -159,7 +159,7 @@ end
         op_identity,
         Index((; site=1, cut=2)),
         Index((; site=2, cut=2));
-        absorb=Muscle.AbsorbU(),
+        absorb=Muscle.Operations.AbsorbU(),
     )
 
     @test LinearAlgebra.norm(U) ≈ norm(binary_einsum(Γa, Γb))
@@ -176,7 +176,7 @@ end
         op_identity,
         Index((; site=1, cut=2)),
         Index((; site=2, cut=2));
-        absorb=Muscle.AbsorbV(),
+        absorb=Muscle.Operations.AbsorbV(),
     )
 
     @test LinearAlgebra.norm(V) ≈ norm(binary_einsum(Γa, Γb))
@@ -193,7 +193,7 @@ end
         op_identity,
         Index((; site=1, cut=2)),
         Index((; site=2, cut=2));
-        absorb=Muscle.AbsorbEqually(),
+        absorb=Muscle.Operations.AbsorbEqually(),
     )
 
     @test U ≈ Γa

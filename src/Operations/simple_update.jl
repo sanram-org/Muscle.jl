@@ -46,7 +46,7 @@ function simple_update(
     rtol::Float64=0.0,
     maxdim=nothing,
 )
-    Θ = Muscle.binary_einsum(Muscle.binary_einsum(A, B; dims=[ind_bond_ab]), G; dims=[ind_physical_a, ind_physical_b])
+    Θ = binary_einsum(binary_einsum(A, B; dims=[ind_bond_ab]), G; dims=[ind_physical_a, ind_physical_b])
     Θ = replace(Θ, ind_physical_g_a => ind_physical_a, ind_physical_g_b => ind_physical_b)
 
     inds_u = setdiff(inds(A), [ind_bond_ab])
@@ -67,13 +67,13 @@ function simple_update(
     if absorb isa DontAbsorb
         return U, S, V
     elseif absorb isa AbsorbU
-        U = Muscle.hadamard!(U, U, S)
+        U = hadamard!(U, U, S)
     elseif absorb isa AbsorbV
-        V = Muscle.hadamard!(V, V, S)
+        V = hadamard!(V, V, S)
     elseif absorb isa AbsorbEqually
         S_sqrt = sqrt.(S)
-        U = Muscle.hadamard!(U, U, S_sqrt)
-        V = Muscle.hadamard!(V, V, S_sqrt)
+        U = hadamard!(U, U, S_sqrt)
+        V = hadamard!(V, V, S_sqrt)
     end
 
     return U, V
