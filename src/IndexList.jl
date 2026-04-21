@@ -65,7 +65,7 @@ Base.IndexStyle(::Type{<:AbstractIndexList}) = Base.IndexLinear()
 Base.similar(::AbstractIndexList, ::Type{Index}, dims::Base.Dims{1}) = MutableIndexList(undef, dims[1])
 function Base.similar(::AbstractIndexList, ::Type{T}, dims::Base.Dims{1}) where {T}
     @debug "[Base.similar] creating Vector{$T} instead of MutableIndexList"
-    return MutableIndexList(undef, dims[1])
+    return Vector{T}(undef, dims[1])
 end
 
 Base.push!(a::MutableIndexList, v) = push!(a.vec, v)
