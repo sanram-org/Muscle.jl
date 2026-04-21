@@ -1,4 +1,8 @@
-# <img alt="" width="7%" src="docs/src/assets/logo.svg"> Muscle.jl
+<picture>
+    <source media="(prefers-color-theme: light)" srcset="docs/src/assets/logo-text.svg">
+    <source media="(prefers-color-theme: dark)" srcset="docs/src/assets/logo-text-dark.svg">
+    <img alt="" width="80%" src="docs/src/assets/logo-text.svg">
+</picture>
 
 > :muscle: Muscles power Tensors :muscle:
 
