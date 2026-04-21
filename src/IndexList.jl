@@ -89,6 +89,7 @@ Base.setdiff!(a::MutableIndexList, b) = MutableIndexList(setdiff!(parent(a), b))
 Base.symdiff(a::AbstractIndexList, b) = IndexList(symdiff(parent(a), b))
 Base.symdiff!(a::MutableIndexList, b) = MutableIndexList(symdiff!(parent(a), b))
 
+findperm(from, to) = findperm(IndexList(from), IndexList(to))
 function findperm(from::AbstractIndexList, to::AbstractIndexList)
     @assert issetequal(from, to)
 
@@ -108,11 +109,8 @@ function findperm(from::AbstractIndexList, to::AbstractIndexList)
     return res
 end
 
-function factorinds(_all_inds, _left_inds, _right_inds)
-    all_inds = IndexList(_all_inds)
-    left_inds = IndexList(_left_inds)
-    right_inds = IndexList(_right_inds)
-
+factor_inds(all_inds, left_inds, right_inds) = factorinds(IndexList(all_inds), IndexList(left_inds), IndexList(right_inds))
+function factorinds(all_inds, left_inds, right_inds)
     if !isdisjoint(left_inds, right_inds)
         throw(ArgumentError("left ($left_inds) and right $(right_inds) indices must be disjoint"))
     end
