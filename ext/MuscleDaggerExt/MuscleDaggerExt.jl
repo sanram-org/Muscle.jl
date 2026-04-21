@@ -3,7 +3,7 @@ module MuscleDaggerExt
 using Muscle
 using Dagger
 
-function Base.__init__()
+function __init__()
     Muscle.register_backend!(BackendDagger())
     Muscle.Operations.register_backend_for_op!(Muscle.Operations.binary_einsum, BackendDagger())
 end
