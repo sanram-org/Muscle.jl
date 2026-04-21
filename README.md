@@ -218,16 +218,16 @@ Muscle.Operations.setbackend!(unary_einsum, Muscle.PlatformCUDA(), Muscle.Backen
 The currently support table of backends and operations is,
 
 <!-- | **Platform**      | Host | Reactant    | CUDA             | CUDA        | CUDA           | Dagger    | Host / CUDA | -->
-|                   | Base | Reactant.jl | CUDA.jl (cuBLAS) | CuTENSOR.jl | CuTensorNet.jl | Dagger.jl | OMEinsum.jl | Strided.jl |
-| ----------------- | ---- | ----------- | ---------------- | ----------- | -------------- | --------- | ----------- | ---------- |
-| unary_einsum      |      |             |                  |             |                |           | ✅           |            |
-| binary_einsum     | ✅    | ✅           | ✅                | ✅           | ✅              | ✅         | ✅           | ✅          |
-| hadamard          | ✅    |             |                  |             |                |           |             |            |
-| tensor_qr_thin    | ✅    | ⌛           | ⌛                | -           | ✅              |           | -           | -          |
-| tensor_svd_thin   | ✅    | ⌛           | ⌛                | -           | ✅              |           | -           | -          |
-| tensor_svd_trunc  | ✅    |             |                  | -           |                |           | -           | -          |
-| tensor_eigen_thin | ✅    | ⌛           | ⌛                | -           |                |           | -           | -          |
-| simple_update     | ✅    | ⌛           | -                | -           | ✅              |           | -           | -          |
+|                   | Base (stdlibs) | Reactant.jl | CUDA.jl (cuBLAS) | CuTENSOR.jl | CuTensorNet.jl | Dagger.jl | OMEinsum.jl | Strided.jl |
+| ----------------- | -------------- | ----------- | ---------------- | ----------- | -------------- | --------- | ----------- | ---------- |
+| hadamard          | ✅              |             |                  |             |                |           |             |            |
+| unary_einsum      |                |             |                  |             |                |           | ✅           |            |
+| binary_einsum     | ✅              | ✅           | ✅                | ✅           | ✅              | ✅         | ✅           | ✅          |
+| tensor_qr_thin    | ✅              | ⌛           | ⌛                | -           | ✅              |           | -           | -          |
+| tensor_svd_thin   | ✅              | ⌛           | ⌛                | -           | ✅              |           | -           | -          |
+| tensor_svd_trunc  | ✅              |             |                  | -           |                |           | -           | -          |
+| tensor_eigen_thin | ✅              | ⌛           | ⌛                | -           |                |           | -           | -          |
+| simple_update     | ✅              | ⌛           | -                | -           | ✅              |           | -           | -          |
 
 | Legend               |
 | -------------------- |
