@@ -57,7 +57,6 @@ Base.@nospecializeinfer function Reactant.traced_type_inner(
     return Tensor{TracedRNumber{T}}
 end
 
-# TODO in Reactant v0.3, rename it to `Reactant.transmute_type`
 Base.@nospecializeinfer function Reactant.traced_type_inner(
     @nospecialize(_::Type{Tensor{T,N}}),
     seen,
@@ -66,10 +65,9 @@ Base.@nospecializeinfer function Reactant.traced_type_inner(
     @nospecialize(sharding),
     @nospecialize(runtime)
 ) where {T,N}
-    return Tensor{TracedRNumber{T,N}}
+    return Tensor{TracedRNumber{T},N}
 end
 
-# TODO in Reactant v0.3, rename it to `Reactant.transmute_type`
 Base.@nospecializeinfer function Reactant.traced_type_inner(
     @nospecialize(_::Type{Tensor{T,N,A}}),
     seen,
@@ -78,7 +76,6 @@ Base.@nospecializeinfer function Reactant.traced_type_inner(
     sharding,
     runtime,
 ) where {T,N,A}
-    # TODO in Reactant v0.3, rename it to `Reactant.transmute_type`
     A_traced = Reactant.traced_type_inner(A, seen, mode, track_numbers, sharding, runtime)
     T_traced = eltype(A_traced)
     return Tensor{T_traced,N,A_traced}
