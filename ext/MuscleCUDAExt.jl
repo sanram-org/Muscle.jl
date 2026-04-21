@@ -4,7 +4,7 @@ using Muscle
 using CUDA
 using cuTENSOR
 
-function Base.__init__()
+function __init__()
     Muscle.register_backend!(BackendCUDA())
     Muscle.Operations.register_backend_for_op!(Muscle.Operations.binary_einsum, BackendCuTENSOR())
 end
