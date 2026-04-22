@@ -1,6 +1,7 @@
 module MuscleITensorsExt
 
 using Muscle
+using Muscle: Label
 using ITensors: ITensors, ITensor, Index
 
 function symbolize(index::Index)
