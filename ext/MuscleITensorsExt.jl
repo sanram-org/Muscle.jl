@@ -10,8 +10,8 @@ function symbolize(index::Index)
     return Symbol(length(tag) > 16 ? tag[(end - 16 + 1):end] : tag)
 end
 
-function tagize(index::Symbol)
-    tag = string(index)
+function tagize(label::Label)
+    tag = string(label)
 
     # NOTE ITensors' Index's tag only has space for 16 characters
     return length(tag) > 16 ? tag[(end - 16 + 1):end] : tag
