@@ -3,7 +3,7 @@ module MuscleReactantExt
 using Muscle
 using Muscle: BackendReactant
 using Reactant
-using Reactant: TracedRNumber, TracedRArray, ConcreteRNumber, ConcreteRArray, AnyTracedRArray, AnyConcreteRArray
+using Reactant: @opcall, TracedRNumber, TracedRArray, ConcreteRNumber, ConcreteRArray, AnyTracedRArray, AnyConcreteRArray
 const MLIR = Reactant.MLIR
 const stablehlo = MLIR.Dialects.stablehlo
 using PrecompileTools
@@ -120,11 +120,11 @@ Base.@nospecializeinfer @noinline function Muscle.binary_einsum(
     da = T.(Reactant.materialize_traced_array(parent(a)))
     db = T.(Reactant.materialize_traced_array(parent(b)))
 
-    data = Reactant.Ops.dot_general(da, db; contracting_dimensions, batching_dimensions)
+    data = @opcall dot_general(da, db; contracting_dimensions, batching_dimensions)
 
     # if `out` is provided, emit `stablehlo.transpose` to correct dimension order
     if !isempty(out)
-        data = Reactant.Ops.transpose(data, map(i -> findfirst(==(i), ic), out))
+        data = @opcall transpose(data, map(i -> findfirst(==(i), ic), out))
         ic = out
     end
 
@@ -141,7 +141,7 @@ function Muscle.binary_einsum(
     ::BackendReactant, inds_c, @nospecialize(a::Tensor{TracedRNumber{T}}), @nospecialize(b::Tensor); kwargs...
 ) where {T}
     return Muscle.binary_einsum(
-        BackendReactant(), inds_c, a, Tensor(Reactant.Ops.constant(parent(b)), inds(b)); kwargs...
+        BackendReactant(), inds_c, a, Tensor(@opcall(constant(parent(b))), inds(b)); kwargs...
     )
 end
 
