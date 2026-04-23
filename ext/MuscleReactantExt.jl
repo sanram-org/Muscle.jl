@@ -4,6 +4,7 @@ using Muscle
 using Muscle: BackendReactant
 using Reactant
 using Reactant: @opcall, use_overlayed_version, TracedRNumber, TracedRArray, ConcreteRNumber, ConcreteRArray, AnyTracedRArray, AnyConcreteRArray
+using Reactant.TracedUtils: set_mlir_data!, get_mlir_data
 const MLIR = Reactant.MLIR
 const stablehlo = MLIR.Dialects.stablehlo
 using PrecompileTools
@@ -141,7 +142,13 @@ Base.@nospecializeinfer function Muscle.binary_einsum(
     return Tensor(data, ic)
 end
 
-# TODO binary_einsum!
+Base.@nospecializeinfer function Muscle.binary_einsum!(
+    ::BackendReactant, @nospecialize(c::Tensor), @nospecialize(a::Tensor), @nospecialize(b::Tensor)
+)
+    _c = Muscle.binary_einsum(BackendReactant(), inds(c), a, b)
+    set_mlir_data!(c, get_mlir_data(_c))
+    return c
+end
 
 # fixes issue with default `conj(x::AbstractArray) = x` method from Base (it might be overlayed in Reactant.jl)
 Base.conj(@nospecialize(x::Tensor{<:TracedRNumber})) = x

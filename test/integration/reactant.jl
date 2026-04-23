@@ -125,6 +125,20 @@ end
     end
 end
 
+@testset "binary_einsum!" begin
+    A = Tensor(rand(2, 3), [Index(:i), Index(:j)])
+    B = Tensor(rand(3, 4), [Index(:j), Index(:k)])
+    Are = adapt(ConcreteRArray, A)
+    Bre = adapt(ConcreteRArray, B)
+
+    C = Tensor(zeros(2, 4), [Index(:i), Index(:k)])
+    Cre = adapt(ConcreteRArray, C)
+
+    binary_einsum!(C, A, B)
+    @jit binary_einsum!(Cre, Are, Bre)
+    @test @allowscalar Cre ≈ C
+end
+
 @testset "autodiff" begin
     @testset "inner product" begin
         # inner-product of vectors
