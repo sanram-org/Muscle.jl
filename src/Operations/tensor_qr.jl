@@ -22,8 +22,8 @@ function tensor_qr_thin(A::Tensor; inds_q=(), inds_r=(), ind_virtual=Index(gensy
     return tensor_qr_thin(backend, A; inds_q, inds_r, ind_virtual, inplace, kwargs...)
 end
 
-function tensor_qr_thin(::Backend, A; kwargs...)
-    throw(ArgumentError("`tensor_qr_thin` not implemented or not loaded for backend $(typeof(A))"))
+Base.Base.@nospecializeinfer function tensor_qr_thin(backend::Backend, @nospecialize(A); kwargs...)
+    throw(ArgumentError("`tensor_qr_thin` not implemented or not loaded for backend $backend"))
 end
 
 function tensor_qr_thin!(Q::Tensor, R::Tensor, A::Tensor; kwargs...)
@@ -32,8 +32,8 @@ function tensor_qr_thin!(Q::Tensor, R::Tensor, A::Tensor; kwargs...)
     return tensor_qr_thin!(backend, Q, R, A; kwargs...)
 end
 
-function tensor_qr_thin!(::Backend, Q, R, A; kwargs...)
-    throw(ArgumentError("`tensor_qr_thin!` not implemented or not loaded for backend $(typeof(A))"))
+Base.@nospecializeinfer function tensor_qr_thin!(backend::Backend, @nospecialize(Q), @nospecialize(R), @nospecialize(A); kwargs...)
+    throw(ArgumentError("`tensor_qr_thin!` not implemented or not loaded for backend $backend"))
 end
 
 function tensor_qr_thin(

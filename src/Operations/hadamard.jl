@@ -11,8 +11,8 @@ function hadamard(a::Tensor, b::Tensor)
     return hadamard(backend, a, b)
 end
 
-function hadamard(::Backend, a, b)
-    throw(ArgumentError("`hadamard` not implemented or not loaded for backend $(typeof(a))"))
+Base.@nospecializeinfer function hadamard(backend::Backend, @nospecialize(a), @nospecialize(b))
+    throw(ArgumentError("`hadamard` not implemented or not loaded for backend $backend"))
 end
 
 function hadamard!(c::Tensor, a::Tensor, b::Tensor)
@@ -27,8 +27,8 @@ function hadamard!(c::Tensor, a::Tensor, b::Tensor)
     return hadamard!(backend, c, a, b)
 end
 
-function hadamard!(::Backend, c, a, b)
-    throw(ArgumentError("`hadamard!` not implemented or not loaded for backend $(typeof(a))"))
+Base.@nospecializeinfer function hadamard!(backend::Backend, @nospecialize(c), @nospecialize(a), @nospecialize(b))
+    throw(ArgumentError("`hadamard!` not implemented or not loaded for backend $backend"))
 end
 
 function hadamard(::BackendBase, a::Tensor, b::Tensor)

@@ -53,8 +53,8 @@ function tensor_svd_thin(A::Tensor; inds_u=(), inds_v=(), ind_s=Index(gensym(:sv
     return tensor_svd_thin(backend, A; inds_u, inds_v, ind_s, inplace, kwargs...)
 end
 
-function tensor_svd_thin(::Backend, A; kwargs...)
-    throw(ArgumentError("`tensor_svd_thin` not implemented or not loaded for backend $(typeof(A))"))
+Base.@nospecializeinfer function tensor_svd_thin(backend::Backend, @nospecialize(A); kwargs...)
+    throw(ArgumentError("`tensor_svd_thin` not implemented or not loaded for backend $backend"))
 end
 
 function tensor_svd_thin!(Q::Tensor, R::Tensor, A::Tensor; kwargs...)
@@ -63,8 +63,8 @@ function tensor_svd_thin!(Q::Tensor, R::Tensor, A::Tensor; kwargs...)
     return tensor_svd_thin!(backend, Q, R, A; kwargs...)
 end
 
-function tensor_svd_thin!(::Backend, args...; kwargs...)
-    throw(ArgumentError("`tensor_svd_thin!` not implemented or not loaded for backend $(typeof(A))"))
+Base.@nospecializeinfer function tensor_svd_thin!(backend::Backend, @nospecialize(args...); kwargs...)
+    throw(ArgumentError("`tensor_svd_thin!` not implemented or not loaded for backend $backend"))
 end
 
 function tensor_svd_trunc(A::Tensor; inds_u=(), inds_v=(), ind_s=Index(gensym(:svd)), inplace=false, kwargs...)
@@ -72,8 +72,8 @@ function tensor_svd_trunc(A::Tensor; inds_u=(), inds_v=(), ind_s=Index(gensym(:s
     return tensor_svd_trunc(backend, A; inds_u, inds_v, ind_s, inplace, kwargs...)
 end
 
-function tensor_svd_trunc(::Backend, A; kwargs...)
-    throw(ArgumentError("`tensor_svd_trunc` not implemented or not loaded for backend $(typeof(A))"))
+Base.@nospecializeinfer function tensor_svd_trunc(backend::Backend, @nospecialize(A); kwargs...)
+    throw(ArgumentError("`tensor_svd_trunc` not implemented or not loaded for backend $backend"))
 end
 
 function tensor_svd_trunc!(Q::Tensor, R::Tensor, A::Tensor; kwargs...)
@@ -82,8 +82,8 @@ function tensor_svd_trunc!(Q::Tensor, R::Tensor, A::Tensor; kwargs...)
     return tensor_svd_trunc!(backend, Q, R, A; kwargs...)
 end
 
-function tensor_svd_trunc!(::Backend, args...; kwargs...)
-    throw(ArgumentError("`tensor_svd_trunc!` not implemented or not loaded for backend $(typeof(A))"))
+Base.@nospecializeinfer function tensor_svd_trunc!(backend::Backend, @nospecialize(args...); kwargs...)
+    throw(ArgumentError("`tensor_svd_trunc!` not implemented or not loaded for backend $backend"))
 end
 
 ## `Base`
