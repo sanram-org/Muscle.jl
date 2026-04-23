@@ -3,7 +3,7 @@ module MuscleReactantExt
 using Muscle
 using Muscle: BackendReactant
 using Reactant
-using Reactant: @opcall, TracedRNumber, TracedRArray, ConcreteRNumber, ConcreteRArray, AnyTracedRArray, AnyConcreteRArray
+using Reactant: @opcall, use_overlayed_version, TracedRNumber, TracedRArray, ConcreteRNumber, ConcreteRArray, AnyTracedRArray, AnyConcreteRArray
 const MLIR = Reactant.MLIR
 const stablehlo = MLIR.Dialects.stablehlo
 using PrecompileTools
@@ -85,9 +85,9 @@ function Muscle.unary_einsum(
     error("compilation of `Muscle.unary_einsum` is not yet supported")
 end
 
-Base.@nospecializeinfer @noinline function Muscle.binary_einsum(
-    ::BackendReactant, inds_c, @nospecialize(a::Tensor{TracedRNumber{Ta}}), @nospecialize(b::Tensor{TracedRNumber{Tb}})
-) where {Ta,Tb}
+Base.@nospecializeinfer function Muscle.binary_einsum(
+    ::BackendReactant, inds_c, @nospecialize(a::Tensor), @nospecialize(b::Tensor)
+)
     out = inds_c
     dims = setdiff(inds(a) ∩ inds(b), out)
 
@@ -115,6 +115,15 @@ Base.@nospecializeinfer @noinline function Muscle.binary_einsum(
     result_inds = setdiff(ia, contracting_inds, batching_inds) ∪ setdiff(ib, contracting_inds, batching_inds)
     ic = vcat(batching_inds, result_inds)
 
+    # if tensors do not contain Reactant arrays, emit `stablehlo.constant`
+    if !use_overlayed_version(a)
+        a = Tensor(@opcall(constant(parent(a))), inds(a))
+    end
+
+    if !use_overlayed_version(b)
+        b = Tensor(@opcall(constant(parent(b))), inds(b))
+    end
+
     # StableHLO expects matching element types
     T = Base.promote_eltype(a, b)
     da = T.(Reactant.materialize_traced_array(parent(a)))
@@ -129,20 +138,6 @@ Base.@nospecializeinfer @noinline function Muscle.binary_einsum(
     end
 
     return Tensor(data, ic)
-end
-
-function Muscle.binary_einsum(
-    ::BackendReactant, inds_c, @nospecialize(a::Tensor), @nospecialize(b::Tensor{TracedRNumber{T}}); kwargs...
-) where {T}
-    Muscle.binary_einsum(BackendReactant(), inds_c, b, a; kwargs...)
-end
-
-function Muscle.binary_einsum(
-    ::BackendReactant, inds_c, @nospecialize(a::Tensor{TracedRNumber{T}}), @nospecialize(b::Tensor); kwargs...
-) where {T}
-    return Muscle.binary_einsum(
-        BackendReactant(), inds_c, a, Tensor(@opcall(constant(parent(b))), inds(b)); kwargs...
-    )
 end
 
 # TODO binary_einsum!
