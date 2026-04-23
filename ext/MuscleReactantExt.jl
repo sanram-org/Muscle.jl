@@ -33,7 +33,6 @@ for T in [TracedRNumber, ConcreteRNumber, TracedRArray, ConcreteRArray, AnyTrace
 end
 
 # we specify `mode` and `track_numbers` types due to ambiguity
-# TODO in Reactant v0.3, rename it to `Reactant.transmute_type`
 Base.@nospecializeinfer function Reactant.traced_type_inner(
     @nospecialize(_::Type{Tensor}),
     seen,
@@ -45,7 +44,6 @@ Base.@nospecializeinfer function Reactant.traced_type_inner(
     return Tensor
 end
 
-# TODO in Reactant v0.3, rename it to `Reactant.transmute_type`
 Base.@nospecializeinfer function Reactant.traced_type_inner(
     @nospecialize(_::Type{Tensor{T}}),
     seen,
