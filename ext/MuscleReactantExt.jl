@@ -133,7 +133,8 @@ Base.@nospecializeinfer function Muscle.binary_einsum(
 
     # if `out` is provided, emit `stablehlo.transpose` to correct dimension order
     if !isempty(out)
-        data = @opcall transpose(data, map(i -> findfirst(==(i), ic), out))
+        perm = map(i -> findfirst(==(i), ic), out)
+        data = @opcall transpose(data, perm)
         ic = out
     end
 
