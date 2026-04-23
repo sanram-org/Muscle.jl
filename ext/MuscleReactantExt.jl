@@ -150,10 +150,6 @@ Base.@nospecializeinfer function Muscle.binary_einsum!(
     return c
 end
 
-# fixes issue with default `conj(x::AbstractArray) = x` method from Base (it might be overlayed in Reactant.jl)
-Base.conj(@nospecialize(x::Tensor{<:TracedRNumber})) = x
-Base.conj(@nospecialize(x::Tensor{TracedRNumber{T}})) where {T<:Complex} = Tensor(conj(parent(x)), inds(x))
-
 # @static if Reactant.Reactant_jll.is_available() && Reactant.precompilation_supported()
 #     @setup_workload begin
 #         muscle_skip_rewrites()
