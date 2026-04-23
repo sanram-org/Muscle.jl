@@ -61,7 +61,7 @@ end
         Bre = adapt(ConcreteRArray, B)
         Cre = @jit binary_einsum(Are, Bre)
 
-        @test Cre ≈ C
+        @test @allowscalar Cre ≈ C
     end
 
     @testset "outer product - eltype=$T" for T in [Float64, ComplexF64]
@@ -73,7 +73,7 @@ end
         Bre = adapt(ConcreteRArray, B)
         Cre = @jit binary_einsum(Are, Bre)
 
-        @test Cre ≈ C
+        @test @allowscalar Cre ≈ C
     end
 
     @testset "manual - eltype=$T" for T in [Float64, ComplexF64]
@@ -86,7 +86,7 @@ end
         C = binary_einsum(A, B; dims=[Index(:j), Index(:k)])
         Cre = @jit binary_einsum(Are, Bre; dims=[Index(:j), Index(:k)])
 
-        @test Cre ≈ C
+        @test @allowscalar Cre ≈ C
 
         # binary_einsumion of not all common indices
         # NOTE using `OMEinsum` because we are treating `:k` as a hyperindex
@@ -94,7 +94,7 @@ end
         C = binary_einsum(Muscle.BackendOMEinsum(), [Index(:i), Index(:k), Index(:l)], A, B)
         Cre = @jit binary_einsum(Are, Bre; dims=[Index(:j)])
 
-        @test Cre ≈ C
+        @test @allowscalar Cre ≈ C
     end
 
     @testset "multiple tensors - eltype=$T" for T in [Float64, ComplexF64]
@@ -121,7 +121,7 @@ end
         X = f3_omeinsum(A, B, C, D)
         Xre = @jit f3(Are, Bre, Cre, Dre)
 
-        @test Xre ≈ X
+        @test @allowscalar Xre ≈ X
     end
 end
 
@@ -137,8 +137,8 @@ end
             grad_f(a, b) = Enzyme.gradient(Reverse, binary_einsum, a, b)
             dAre, dBre = @jit grad_f(Are, Bre)
 
-            @test dAre ≈ B
-            @test dBre ≈ A
+            @test @allowscalar dAre ≈ B
+            @test @allowscalar dBre ≈ A
         end
 
         # inner-product of matrices
@@ -151,8 +151,8 @@ end
             grad_f2(a, b) = Enzyme.gradient(Reverse, binary_einsum, a, b)
             dAre, dBre = @jit grad_f2(Are, Bre)
 
-            @test dAre ≈ B
-            @test dBre ≈ A
+            @test @allowscalar dAre ≈ B
+            @test @allowscalar dBre ≈ A
         end
 
         # inner-product of complex matrices
@@ -165,8 +165,8 @@ end
             grad_f3(a, b) = Enzyme.gradient(Reverse, binary_einsum, a, b)
             dAre, dBre = @jit grad_f3(Are, Bre)
 
-            @test dAre ≈ conj(B)
-            @test dBre ≈ conj(A)
+            @test @allowscalar dAre ≈ conj(B)
+            @test @allowscalar dBre ≈ conj(A)
         end
     end
 
