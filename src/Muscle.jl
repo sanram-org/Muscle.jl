@@ -20,6 +20,8 @@ include("Backend.jl")
 include("Operations/Operations.jl")
 @reexport using .Operations
 
+include("Testing.jl")
+
 # precompilation
 using PrecompileTools
 

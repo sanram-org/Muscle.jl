@@ -1,8 +1,32 @@
 using Test
 using Muscle
+using Muscle.Testing
+using LinearAlgebra
 
 # TODO numeric test with non-random data
 # TODO test on NVIDIA GPU
+
+@testset "$(typeof(alg)) - $T - $(Asize)" for
+    alg in [LinearAlgebra.QRIteration(), LinearAlgebra.DivideAndConquer()],
+    T in [Float64, ComplexF64],
+    Asize in [(2,2), (2,3), (3,2)]
+
+    A = Tensor(construct_test_array(T, Asize...), [Index(:i), Index(:j)])
+
+    U, Σ, Vt = Muscle.tensor_svd_thin(A; inds_u=[Index(:i)], ind_s=Index(:x), alg)
+
+    F = LinearAlgebra.svd(parent(A); alg)
+    Uref = Tensor(F.U, [Index(:i), Index(:x)])
+    Σref = Tensor(F.S, [Index(:x)])
+    Vtref = Tensor(F.Vt, [Index(:x), Index(:j)])
+
+    @test isapprox(U, Uref)
+    @test isapprox(Σ, Σref)
+    @test isapprox(Vt, Vtref)
+
+    Areconstructed = binary_einsum(hadamard(U, Σ), Vt)
+    @test isapprox(A, Areconstructed)
+end
 
 A = Tensor(rand(ComplexF64, 2, 4, 6, 8), [Index(:i), Index(:j), Index(:k), Index(:l)])
 
