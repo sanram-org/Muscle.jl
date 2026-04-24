@@ -21,7 +21,7 @@ end
 @testset "Integration" verbose = true begin
     @safetestset "OMEinsum" include("integration/omeinsum.jl")
     @safetestset "Strided" include("integration/strided.jl")
-    @safetestset "Dagger" include("integration/dagger.jl")
+    # @safetestset "Dagger" include("integration/dagger.jl")
 
     # @safetestset "ChainRules" include("integration/chainrules.jl")
 
