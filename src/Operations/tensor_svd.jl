@@ -92,11 +92,9 @@ Base.@nospecializeinfer function tensor_svd_trunc(backend::Backend, @nospecializ
         k = something(findfirst(<(threshold), view(S, ind_s => 1:k)), k)
     end
 
-    keep = 1:k
-
-    view_u = view(U, ind_s => 1:keep)
-    view_s = view(S, ind_s => 1:keep)
-    view_vt = view(Vt, ind_s => 1:keep)
+    view_u = view(U, ind_s => 1:k)
+    view_s = view(S, ind_s => 1:k)
+    view_vt = view(Vt, ind_s => 1:k)
 
     return view_u, view_s, view_vt
 end
