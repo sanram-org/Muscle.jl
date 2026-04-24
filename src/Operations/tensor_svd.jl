@@ -72,8 +72,33 @@ function tensor_svd_trunc(A::Tensor; inds_u=(), inds_v=(), ind_s=Index(gensym(:s
     return tensor_svd_trunc(backend, A; inds_u, inds_v, ind_s, inplace, kwargs...)
 end
 
-Base.@nospecializeinfer function tensor_svd_trunc(backend::Backend, @nospecialize(A); kwargs...)
-    throw(ArgumentError("`tensor_svd_trunc` not implemented or not loaded for backend $backend"))
+Base.@nospecializeinfer function tensor_svd_trunc(backend::Backend, @nospecialize(A::Tensor); maxdim=nothing, threshold=nothing, kwargs...)
+    @debug "Fallback to generic `tensor_svd_trunc` implementation for backend $backend with call to `tensor_svd_thin`."
+    U, S, Vt = tensor_svd_thin(backend, A; kwargs...)
+    ind_s = only(inds(S))
+
+    # truncate singular values
+    k = length(S)
+
+    # use `maxdim` to truncate the singular values
+    if !isnothing(maxdim)
+        k = min(k, maxdim)
+    end
+
+    # use `threshold` to truncate the singular values
+    if !isnothing(threshold)
+        # threshold is relative threshold
+        threshold = LinearAlgebra.norm(S) * threshold
+        k = something(findfirst(<(threshold), view(S, ind_s => 1:k)), k)
+    end
+
+    keep = 1:k
+
+    view_u = view(U, ind_s => 1:keep)
+    view_s = view(S, ind_s => 1:keep)
+    view_vt = view(Vt, ind_s => 1:keep)
+
+    return view_u, view_s, view_vt
 end
 
 function tensor_svd_trunc!(Q::Tensor, R::Tensor, A::Tensor; kwargs...)
