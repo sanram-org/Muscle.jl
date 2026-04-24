@@ -63,59 +63,6 @@ function tensor_svd_thin!(Q::Tensor, R::Tensor, A::Tensor; kwargs...)
     return tensor_svd_thin!(backend, Q, R, A; kwargs...)
 end
 
-Base.@nospecializeinfer function tensor_svd_thin!(backend::Backend, @nospecialize(args...); kwargs...)
-    throw(ArgumentError("`tensor_svd_thin!` not implemented or not loaded for backend $backend"))
-end
-
-function tensor_svd_trunc(A::Tensor; inds_u=(), inds_v=(), ind_s=Index(gensym(:svd)), inplace=false, kwargs...)
-    backend = getbackend(tensor_svd_trunc, platform(A))
-    return tensor_svd_trunc(backend, A; inds_u, inds_v, ind_s, inplace, kwargs...)
-end
-
-Base.@nospecializeinfer function tensor_svd_trunc(backend::Backend, @nospecialize(A); kwargs...)
-    throw(ArgumentError("`tensor_svd_trunc` not implemented or not loaded for backend $backend"))
-end
-
-function tensor_svd_trunc!(Q::Tensor, R::Tensor, A::Tensor; kwargs...)
-    _platform = promote_platform(platform(Q), platform(R), platform(A))
-    backend = getbackend(tensor_svd_trunc!, _platform)
-    return tensor_svd_trunc!(backend, Q, R, A; kwargs...)
-end
-
-Base.@nospecializeinfer function tensor_svd_trunc!(backend::Backend, @nospecialize(args...); kwargs...)
-    throw(ArgumentError("`tensor_svd_trunc!` not implemented or not loaded for backend $backend"))
-end
-
-## `Base`
-function tensor_svd_thin(
-    ::BackendBase, A::Tensor; inds_u=(), inds_v=(), ind_s=Index(gensym(:vind)), inplace=false, kwargs...
-)
-    inds_u, inds_v = factorinds(inds(A), inds_u, inds_v)
-    @argcheck isdisjoint(inds_u, inds_v)
-    @argcheck issetequal(inds_u ∪ inds_v, inds(A))
-    @argcheck ind_s ∉ inds(A)
-
-    # permute array
-    left_sizes = map(Base.Fix1(size, A), inds_u)
-    right_sizes = map(Base.Fix1(size, A), inds_v)
-    Amat = permutedims(A, [inds_u; inds_v])
-    Amat = reshape(parent(Amat), prod(left_sizes), prod(right_sizes))
-
-    # compute SVD
-    F = if inplace
-        LinearAlgebra.svd!(Amat; kwargs...)
-    else
-        LinearAlgebra.svd(Amat; kwargs...)
-    end
-
-    # tensorify results
-    U = Tensor(reshape(F.U, left_sizes..., size(F.U, 2)), [inds_u; ind_s])
-    s = Tensor(F.S, [ind_s])
-    Vt = Tensor(reshape(F.Vt, size(F.Vt, 1), right_sizes...), [ind_s; inds_v])
-
-    return U, s, Vt
-end
-
 function tensor_svd_thin!(B::Backend, U::Tensor, s::Tensor, V::Tensor, A::Tensor; kwargs...)
     @debug "Fallback to generic `tensor_svd_thin!` implementation for backend $B with intermediate copying."
 
@@ -138,78 +85,27 @@ function tensor_svd_thin!(B::Backend, U::Tensor, s::Tensor, V::Tensor, A::Tensor
     return U, s, V
 end
 
-# TODO implement for cuTensorNet
-"""
-Truncate SVD. With these defaults, it could be used as inplace replacement for tensor_svd_thin
-"""
-function tensor_svd_trunc(
-    ::BackendBase,
-    A::Tensor;
-    inds_u=(),
-    inds_v=(),
-    ind_s=Index(gensym(:vind)),
-    inplace=false,
-    threshold=nothing,
-    maxdim=nothing,
-    kwargs...,
-)
-    inds_u, inds_v = factorinds(inds(A), inds_u, inds_v)
-    @argcheck isdisjoint(inds_u, inds_v)
-    @argcheck issetequal(inds_u ∪ inds_v, inds(A))
-    @argcheck ind_s ∉ inds(A)
-
-    # permute array
-    left_sizes = map(Base.Fix1(size, A), inds_u)
-    right_sizes = map(Base.Fix1(size, A), inds_v)
-    Amat = permutedims(A, [inds_u..., inds_v...])
-    Amat = reshape(parent(Amat), prod(left_sizes), prod(right_sizes))
-
-    # compute SVD
-    F = if inplace
-        LinearAlgebra.svd!(Amat; kwargs...)
-    else
-        LinearAlgebra.svd(Amat; kwargs...)
-    end
-
-    # truncate singular values
-    k = length(F.S)
-
-    # use `maxdim` to truncate the singular values
-    if !isnothing(maxdim)
-        k = min(k, maxdim)
-    end
-
-    # use `threshold` to truncate the singular values
-    if !isnothing(threshold)
-        # threshold is relative threshold
-        threshold = LinearAlgebra.norm(F.S) * threshold
-        k = something(findfirst(<(threshold), view(F.S, 1:k)), k)
-    end
-
-    keep = 1:k
-
-    view_u = view(F.U, :, keep)
-    view_s = view(F.S, keep)
-    view_v = view(F.Vt, keep, :)
-
-    # tensorify results
-    U = Tensor(reshape(view_u, left_sizes..., k), [inds_u; ind_s])
-    s = Tensor(view_s, [ind_s])
-    Vt = Tensor(reshape(view_v, k, right_sizes...), [ind_s; inds_v])
-
-    return U, s, Vt
+function tensor_svd_trunc(A::Tensor; inds_u=(), inds_v=(), ind_s=Index(gensym(:svd)), inplace=false, kwargs...)
+    backend = getbackend(tensor_svd_trunc, platform(A))
+    return tensor_svd_trunc(backend, A; inds_u, inds_v, ind_s, inplace, kwargs...)
 end
 
-function tensor_svd_trunc!(::BackendBase, U::Tensor, s::Tensor, V::Tensor, A::Tensor; kwargs...)
-    @warn "tensor_svd_trunc! on BackendBase does intermediate copying. Consider using `tensor_svd_trunc`."
+Base.@nospecializeinfer function tensor_svd_trunc(backend::Backend, @nospecialize(A); kwargs...)
+    throw(ArgumentError("`tensor_svd_trunc` not implemented or not loaded for backend $backend"))
+end
+
+function tensor_svd_trunc!(Q::Tensor, R::Tensor, A::Tensor; kwargs...)
+    _platform = promote_platform(platform(Q), platform(R), platform(A))
+    backend = getbackend(tensor_svd_trunc!, _platform)
+    return tensor_svd_trunc!(backend, Q, R, A; kwargs...)
+end
+
+function tensor_svd_trunc!(B::Backend, U::Tensor, s::Tensor, V::Tensor, A::Tensor; kwargs...)
+    @warn "Fallback to generic `tensor_svd_trunc!` implementation for backend $B with intermediate copying."
 
     tmp_U, tmp_s, tmp_V = tensor_svd_trunc(
         BackendBase(), A; inds_u=inds(U), inds_v=inds(V), ind_s=only(inds(s)), kwargs...
     )
-
-    @argcheck arch(tmp_U) == arch(U)
-    @argcheck arch(tmp_s) == arch(s)
-    @argcheck arch(tmp_V) == arch(V)
 
     @argcheck inds(tmp_U) == inds(U)
     @argcheck inds(tmp_s) == inds(s)

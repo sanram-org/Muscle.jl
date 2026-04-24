@@ -32,40 +32,11 @@ function tensor_qr_thin!(Q::Tensor, R::Tensor, A::Tensor; kwargs...)
     return tensor_qr_thin!(backend, Q, R, A; kwargs...)
 end
 
-Base.@nospecializeinfer function tensor_qr_thin!(backend::Backend, @nospecialize(Q), @nospecialize(R), @nospecialize(A); kwargs...)
-    throw(ArgumentError("`tensor_qr_thin!` not implemented or not loaded for backend $backend"))
-end
-
-function tensor_qr_thin(
-    ::BackendBase, A; inds_q=(), inds_r=(), ind_virtual=Index(gensym(:qr)), inplace=false, kwargs...
-)
-    ind_virtual ∉ inds(A) || throw(ArgumentError("new virtual bond name ($ind_virtual) cannot be already be present"))
-
-    inds_q, inds_r = factorinds(inds(A), inds_q, inds_r)
-    @argcheck issetequal(inds_q ∪ inds_r, inds(A))
-
-    # permute array
-    left_sizes = map(Base.Fix1(size, A), inds_q)
-    right_sizes = map(Base.Fix1(size, A), inds_r)
-    Amat = permutedims(A, [inds_q; inds_r])
-    Amat = reshape(parent(Amat), prod(left_sizes), prod(right_sizes))
-
-    # compute QR
-    F = LinearAlgebra.qr(Amat; kwargs...)
-    Q, R = Matrix(F.Q), Matrix(F.R)
-
-    # tensorify results
-    Q = Tensor(reshape(Q, left_sizes..., size(Q, 2)), [inds_q..., ind_virtual])
-    R = Tensor(reshape(R, size(R, 1), right_sizes...), [ind_virtual, inds_r...])
-
-    return Q, R
-end
-
-function tensor_qr_thin!(::BackendBase, Q::Tensor, R::Tensor, A::Tensor; kwargs...)
-    @warn "tensor_qr_thin! on BackendBase does intermediate copying. Consider using `tensor_qr_thin`."
+function tensor_qr_thin!(B::Backend, Q::Tensor, R::Tensor, A::Tensor; kwargs...)
+    @warn "Fallback to generic `tensor_qr_thin!` implementation for backend $B with intermediate copying."
 
     tmp_Q, tmp_R = tensor_qr_thin(
-        BackendBase(), A; inds_q=setdiff(inds(Q), inds(R)), inds_r=setdiff(inds(R), inds(Q)), kwargs...
+        B, A; inds_q=setdiff(inds(Q), inds(R)), inds_r=setdiff(inds(R), inds(Q)), kwargs...
     )
 
     @argcheck arch(tmp_Q) == arch(Q)

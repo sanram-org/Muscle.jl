@@ -1,0 +1,46 @@
+function tensor_qr_thin(
+    ::BackendBase, A; inds_q=(), inds_r=(), ind_virtual=Index(gensym(:qr)), inplace=false, kwargs...
+)
+    ind_virtual ∉ inds(A) || throw(ArgumentError("new virtual bond name ($ind_virtual) cannot be already be present"))
+
+    inds_q, inds_r = factorinds(inds(A), inds_q, inds_r)
+    @argcheck issetequal(inds_q ∪ inds_r, inds(A))
+
+    # permute array
+    left_sizes = map(Base.Fix1(size, A), inds_q)
+    right_sizes = map(Base.Fix1(size, A), inds_r)
+    Amat = permutedims(A, [inds_q; inds_r])
+    Amat = reshape(parent(Amat), prod(left_sizes), prod(right_sizes))
+
+    # compute QR
+    F = LinearAlgebra.qr(Amat; kwargs...)
+    Q, R = Matrix(F.Q), Matrix(F.R)
+
+    # tensorify results
+    Q = Tensor(reshape(Q, left_sizes..., size(Q, 2)), [inds_q..., ind_virtual])
+    R = Tensor(reshape(R, size(R, 1), right_sizes...), [ind_virtual, inds_r...])
+
+    return Q, R
+end
+
+function tensor_qr_thin!(::BackendBase, Q::Tensor, R::Tensor, A::Tensor; kwargs...)
+    @warn "tensor_qr_thin! on BackendBase does intermediate copying. Consider using `tensor_qr_thin`."
+
+    tmp_Q, tmp_R = tensor_qr_thin(
+        BackendBase(), A; inds_q=setdiff(inds(Q), inds(R)), inds_r=setdiff(inds(R), inds(Q)), kwargs...
+    )
+
+    @argcheck arch(tmp_Q) == arch(Q)
+    @argcheck arch(tmp_R) == arch(R)
+
+    @argcheck inds(tmp_Q) == inds(Q)
+    @argcheck inds(tmp_R) == inds(R)
+
+    @argcheck size(tmp_Q) == size(Q)
+    @argcheck size(tmp_R) == size(R)
+
+    copyto!(Q, tmp_Q)
+    copyto!(R, tmp_R)
+
+    return Q, R
+end

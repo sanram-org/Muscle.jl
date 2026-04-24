@@ -9,25 +9,31 @@ using ..Muscle: BackendBase, BackendOMEinsum, BackendCuTENSOR, BackendCuTensorNe
 import ..Muscle: available_backends
 
 include("hadamard.jl")
+include("base/hadamard.jl")
 export hadamard, hadamard!
 
 include("unary_einsum.jl")
 export unary_einsum, unary_einsum!
 
 include("binary_einsum.jl")
+include("base/binary_einsum.jl")
 export binary_einsum, binary_einsum!
 
 include("tensor_qr.jl")
+include("base/tensor_qr.jl")
 export tensor_qr_thin, tensor_qr_thin!
 
 include("tensor_svd.jl")
+include("base/tensor_svd.jl")
 export tensor_svd_thin, tensor_svd_thin!, tensor_svd_trunc, tensor_svd_trunc!
 
 include("tensor_eigen.jl")
+include("base/tensor_eigen.jl")
 export tensor_eigen_thin, tensor_eigen_thin!
 export tensor_bieigen_thin, tensor_bieigen_thin!
 
 include("simple_update.jl")
+include("base/simple_update.jl")
 export simple_update, simple_update!
 
 einsum(a::Tensor; kwargs...) = unary_einsum(a; kwargs...)
