@@ -28,7 +28,10 @@ function hadamard!(c::Tensor, a::Tensor, b::Tensor)
 end
 
 Base.@nospecializeinfer function hadamard!(backend::Backend, @nospecialize(c), @nospecialize(a), @nospecialize(b))
-    throw(ArgumentError("`hadamard!` not implemented or not loaded for backend $backend"))
+    @debug "Fallback to generic `hadamard` implementation for backend $backend"
+    _c = hadamard(backend, a, b)
+    copyto!(parent(c), parent(_c))
+    return c
 end
 
 function hadamard(::BackendBase, a::Tensor, b::Tensor)

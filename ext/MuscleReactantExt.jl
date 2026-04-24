@@ -11,10 +11,17 @@ using PrecompileTools
 
 function __init__()
     Muscle.register_backend!(BackendReactant())
-    Muscle.Operations.register_backend_for_op!(Muscle.Operations.unary_einsum, BackendReactant())
-    Muscle.Operations.register_backend_for_op!(Muscle.Operations.unary_einsum!, BackendReactant())
-    Muscle.Operations.register_backend_for_op!(Muscle.Operations.binary_einsum, BackendReactant())
-    Muscle.Operations.register_backend_for_op!(Muscle.Operations.binary_einsum!, BackendReactant())
+
+    for op in [
+        Muscle.hadamard,
+        Muscle.hadamard!,
+        Muscle.unary_einsum,
+        Muscle.unary_einsum!,
+        Muscle.binary_einsum,
+        Muscle.binary_einsum!,
+    ]
+        Muscle.Operations.register_backend_for_op!(op, BackendReactant())
+    end
 
     muscle_skip_rewrites()
 end

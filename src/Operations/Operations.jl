@@ -61,6 +61,7 @@ const DEFAULT_BACKEND = Dict{Tuple{Function, Platform}, Backend}([
     # hadamard
     (hadamard, PlatformHost()) => BackendBase(),
     (hadamard!, PlatformHost()) => BackendBase(),
+    (hadamard, PlatformReactant()) => BackendReactant(),
 
     # unary_einsum
     (unary_einsum, PlatformHost()) => BackendOMEinsum(),
