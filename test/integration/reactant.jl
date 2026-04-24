@@ -1,9 +1,14 @@
 using Test
 using Muscle
+using Muscle.Testing
 using Reactant
 using Adapt
 using Enzyme
 using OMEinsum
+
+# temporal fix
+@warn "Setting default backend to CPU for testing."
+Reactant.set_default_backend("cpu")
 
 # TODO test `make_tracer`
 # TODO test `create_result`
@@ -165,6 +170,32 @@ end
     binary_einsum!(C, A, B)
     @jit binary_einsum!(Cre, Are, Bre)
     @test @allowscalar Cre ≈ C
+end
+
+@testset "tensor_svd_thin" begin
+    @testset "$T - $Asize" for T in [Float64, ComplexF64], Asize in [(4,4), (4,5), (5,4)]
+        A = Tensor(construct_test_array(T, Asize...), [Index(:i), Index(:j)])
+        Are = adapt(ConcreteRArray, A)
+
+        ind_s = Index(:x)
+        Ure, Sre, Vtre = @jit Muscle.tensor_svd_thin(Are; inds_u=[Index(:i)], ind_s, algorithm="QRIteration");
+        Areconstructed = @jit binary_einsum(hadamard(Ure, Sre), Vtre)
+
+        @test @allowscalar isapprox(Areconstructed, A)
+    end
+
+    @testset "n-dim setting - $T - case $i" for T in [Float64, ComplexF64],
+        (i, inds_u) in enumerate([[Index(:i), Index(:j)], [Index(:k)], [Index(:i)]])
+
+        A = Tensor(construct_test_array(T, 2, 4, 6, 8), [Index(:i), Index(:j), Index(:k), Index(:l)])
+        Are = adapt(ConcreteRArray, A)
+
+        ind_s = Index(:x)
+        Ure, Sre, Vtre = @jit Muscle.tensor_svd_thin(Are; inds_u, ind_s, algorithm="QRIteration")
+        Areconstructed = @jit binary_einsum(hadamard(Ure, Sre), Vtre)
+
+        @test @allowscalar isapprox(Areconstructed, A)
+    end
 end
 
 @testset "autodiff" begin

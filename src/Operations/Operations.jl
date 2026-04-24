@@ -92,6 +92,8 @@ const DEFAULT_BACKEND = Dict{Tuple{Function, Platform}, Backend}([
     (tensor_svd_thin!, PlatformHost()) => BackendBase(),
     (tensor_svd_thin, PlatformCUDA()) => BackendCuTensorNet(),
     (tensor_svd_thin!, PlatformCUDA()) => BackendCuTensorNet(),
+    (tensor_svd_thin, PlatformReactant()) => BackendReactant(),
+    (tensor_svd_thin!, PlatformReactant()) => BackendReactant(),
 
     # tensor_svd_trunc
     (tensor_svd_trunc, PlatformHost()) => BackendBase(),

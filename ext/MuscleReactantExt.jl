@@ -1,13 +1,15 @@
 module MuscleReactantExt
 
 using Muscle
-using Muscle: BackendReactant
+using Muscle: BackendReactant, factorinds
 using Reactant
 using Reactant: @opcall, use_overlayed_version, TracedRNumber, TracedRArray, ConcreteRNumber, ConcreteRArray, AnyTracedRArray, AnyConcreteRArray
 using Reactant.TracedUtils: set_mlir_data!, get_mlir_data
 const MLIR = Reactant.MLIR
 const stablehlo = MLIR.Dialects.stablehlo
 using PrecompileTools
+using ArgCheck
+using LinearAlgebra
 
 function __init__()
     Muscle.register_backend!(BackendReactant())
@@ -19,6 +21,7 @@ function __init__()
         Muscle.unary_einsum!,
         Muscle.binary_einsum,
         Muscle.binary_einsum!,
+        Muscle.tensor_svd_thin,
     ]
         Muscle.Operations.register_backend_for_op!(op, BackendReactant())
     end
@@ -160,6 +163,49 @@ Base.@nospecializeinfer function Muscle.binary_einsum!(
     _c = Muscle.binary_einsum(BackendReactant(), inds(c), a, b)
     set_mlir_data!(c, get_mlir_data(_c))
     return c
+end
+
+# TODO batching dimensions?
+Base.@nospecializeinfer function Muscle.tensor_svd_thin(
+    ::BackendReactant, @nospecialize(A::Tensor); inds_u=(), inds_v=(), ind_s=Index(gensym(:vind)), inplace=false, kwargs...
+)
+    inds_u, inds_v = factorinds(inds(A), inds_u, inds_v)
+    @argcheck isdisjoint(inds_u, inds_v)
+    @argcheck issetequal(inds_u ∪ inds_v, inds(A))
+    @argcheck ind_s ∉ inds(A)
+
+    # permute array
+    left_sizes = map(Base.Fix1(size, A), inds_u)
+    right_sizes = map(Base.Fix1(size, A), inds_v)
+    Amat = permutedims(A, [inds_u; inds_v])
+    Amat = reshape(parent(Amat), prod(left_sizes), prod(right_sizes))
+
+    # compute SVD
+    data = Reactant.materialize_traced_array(Amat)
+    
+    # error on `cusolver_gesvd`: The GPU implementation of gesvd requires that the input matrix be m x n with m >= n
+    # TODO update once fixed in Enzyme-JAX
+    apply_fix_for_cusolver_gesvd = get(kwargs, :algorithm, "DEFAULT") == "QRIteration" && size(data, 1) < size(data, 2)
+
+    if apply_fix_for_cusolver_gesvd
+        data = @opcall transpose(data, [2, 1]) # modify if batching dims
+    end
+
+    U, s, Vt, _ = @opcall svd(data; full=false, kwargs...)
+
+    if apply_fix_for_cusolver_gesvd
+        U, Vt = @opcall(transpose(Vt, [2,1])), @opcall(transpose(U, [2,1])) # modify if batching dims
+    end
+
+    # tensorify results
+    U = @opcall reshape(U, left_sizes..., size(s)...)
+    Vt = @opcall reshape(Vt, size(s)..., right_sizes...)
+
+    tU = Tensor(U, [inds_u; ind_s])
+    ts = Tensor(s, [ind_s])
+    tVt = Tensor(Vt, [ind_s; inds_v])
+
+    return tU, ts, tVt
 end
 
 # @static if Reactant.Reactant_jll.is_available() && Reactant.precompilation_supported()
