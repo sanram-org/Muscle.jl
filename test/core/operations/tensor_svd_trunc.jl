@@ -8,9 +8,9 @@ using LinearAlgebra
 @testset "$(typeof(alg)) - $T - $(Asize)" for
     alg in [LinearAlgebra.QRIteration(), LinearAlgebra.DivideAndConquer()],
     T in [Float64, ComplexF64],
-    Asize in [(2,2), (2,3), (3,2)]
+    Asize in [(4,4), (4,5), (5,4)]
 
-    maxdim = 1
+    maxdim = 2
     A = Tensor(construct_test_array(T, Asize...), [Index(:i), Index(:j)])
 
     ind_s = Index(:x)
