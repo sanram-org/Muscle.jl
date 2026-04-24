@@ -51,11 +51,17 @@ U, s, Vt = Muscle.tensor_svd_trunc(A; inds_u=[Index(:i), Index(:j)], ind_s=Index
 
 @test inds(U) == [Index(:i), Index(:j), Index(:x)]
 @test inds(s) == [Index(:x)]
-@test inds(Vt) == [Index(:k), Index(:l), Index(:x)]
+@test inds(Vt) == [Index(:x), Index(:k), Index(:l)]
 
-@test size(U) == (2, 4, 8)
+@test size(U, Index(:i)) == 2
+@test size(U, Index(:j)) == 4
+@test size(U, Index(:x)) == 8
+
 @test size(s) == (8,)
-@test size(Vt) == (6, 8, 8)
+
+@test size(Vt, Index(:k)) == 6
+@test size(Vt, Index(:l)) == 8
+@test size(Vt, Index(:x)) == 8
 
 @test isapprox(Muscle.binary_einsum(Muscle.hadamard(U, s), Vt), A)
 @test isisometry(U, Index(:x))
