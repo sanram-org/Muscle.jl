@@ -63,24 +63,6 @@ julia> binary_einsum(a, b)
  7.0+0.0im  7.0+0.0im
 ```
 
-## Variance behavior
-
-An `Index` can be `Covariant`, `Contravariant` or `Invariant` (default).
-
-```julia
-julia> Index(:i)
-index<i>
-
-julia> Index(:j, Covariant)
-index<j↓>
-
-julia> Index(:k, Contravariant)
-index<k↑>
-```
-
-> [!IMPORTANT]
-> While variance information is important for basis change, this functionality is yet a work in progress. Currently all indices are treated as `Invariant`.
-
 ## Operations
 
 This is a list of primitive operations that Muscle can dispatch to different backends.
