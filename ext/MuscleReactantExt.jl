@@ -80,6 +80,11 @@ Base.@nospecializeinfer function Reactant.traced_type_inner(
     return Tensor{T_traced,N,A_traced}
 end
 
+function Muscle.hadamard(::BackendReactant, @nospecialize(a::Tensor), @nospecialize(b::Tensor))
+    # lil cheat that works
+    return @allowscalar hadamard(Muscle.BackendBase(), a, b)
+end
+
 function Muscle.unary_einsum(
     ::BackendReactant, @nospecialize(a::Tensor{TracedRNumber{T}}); dims=nonunique(inds(a)), out=nothing
 ) where {T}

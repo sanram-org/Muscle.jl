@@ -21,6 +21,34 @@ using OMEinsum
     @test Cre ≈ C
 end
 
+@testset "hadamard" begin
+    # same shape
+    A = Tensor(construct_test_array(Float64, 2, 3), [Index(:i), Index(:j)])
+    B = Tensor(construct_test_array(Float64, 2, 3), [Index(:i), Index(:j)])
+    C = hadamard(A, B)
+
+    Are = adapt(ConcreteRArray, A)
+    Bre = adapt(ConcreteRArray, B)
+    Cre = @jit hadamard(Are, Bre)
+    @test @allowscalar Cre ≈ C
+
+    # propagation through one axis
+    D = Tensor(construct_test_array(Float64, 2), [Index(:i)])
+    E = hadamard(A, D)
+
+    Dre = adapt(ConcreteRArray, D)
+    Ere = @jit hadamard(Are, Dre)
+    @test @allowscalar Ere ≈ E
+
+    # propagation through another axis
+    F = Tensor(construct_test_array(Float64, 3), [Index(:j)])
+    G = hadamard(A, F)
+
+    Fre = adapt(ConcreteRArray, F)
+    Gre = @jit hadamard(Are, Fre)
+    @test @allowscalar Gre ≈ G
+end
+
 @testset "binary_einsum" begin
     @testset "matrix multiplication - eltype=$T" for T in [Float64, ComplexF64]
         A = Tensor(rand(T, 2, 3), [Index(:i), Index(:j)])
