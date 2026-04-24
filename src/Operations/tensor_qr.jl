@@ -47,7 +47,7 @@ function tensor_qr_thin(
     # permute array
     left_sizes = map(Base.Fix1(size, A), inds_q)
     right_sizes = map(Base.Fix1(size, A), inds_r)
-    Amat = permutedims(A, [inds_q..., inds_r...])
+    Amat = permutedims(A, [inds_q; inds_r])
     Amat = reshape(parent(Amat), prod(left_sizes), prod(right_sizes))
 
     # compute QR
