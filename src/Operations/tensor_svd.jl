@@ -116,16 +116,12 @@ function tensor_svd_thin(
     return U, s, Vt
 end
 
-function tensor_svd_thin!(::BackendBase, U::Tensor, s::Tensor, V::Tensor, A::Tensor; kwargs...)
-    @warn "tensor_svd_thin! on BackendBase does intermediate copying. Consider using `tensor_svd_thin`."
+function tensor_svd_thin!(B::Backend, U::Tensor, s::Tensor, V::Tensor, A::Tensor; kwargs...)
+    @debug "Fallback to generic `tensor_svd_thin!` implementation for backend $B with intermediate copying."
 
     tmp_U, tmp_s, tmp_V = tensor_svd_thin(
-        BackendBase(), A; inds_u=inds(U), inds_v=inds(V), ind_s=only(inds(s)), kwargs...
+        B, A; inds_u=inds(U), inds_v=inds(V), ind_s=only(inds(s)), kwargs...
     )
-
-    @argcheck arch(tmp_U) == arch(U)
-    @argcheck arch(tmp_s) == arch(s)
-    @argcheck arch(tmp_V) == arch(V)
 
     @argcheck inds(tmp_U) == inds(U)
     @argcheck inds(tmp_s) == inds(s)

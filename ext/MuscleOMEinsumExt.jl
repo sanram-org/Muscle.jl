@@ -13,13 +13,13 @@ function __init__()
     Muscle.Operations.register_backend_for_op!(Muscle.Operations.binary_einsum!, BackendOMEinsum())
 end
 
-function Muscle.unary_einsum(::BackendOMEinsum, inds_y, x)
+function Muscle.unary_einsum(::BackendOMEinsum, inds_y, x::Tensor)
     y = Tensor(similar(parent(x), Tuple(size(x, ind) for ind in inds_y)), inds_y)
     unary_einsum!(BackendOMEinsum(), y, x)
     return y
 end
 
-function Muscle.unary_einsum!(::BackendOMEinsum, y, x)
+function Muscle.unary_einsum!(::BackendOMEinsum, y::Tensor, x::Tensor)
     @argcheck inds(y) ⊆ inds(x) "Output indices must be a subset of input indices"
 
     size_dict = Dict(inds(x) .=> size(x))
@@ -28,7 +28,7 @@ function Muscle.unary_einsum!(::BackendOMEinsum, y, x)
     return y
 end
 
-function Muscle.binary_einsum(::Muscle.BackendOMEinsum, inds_c, a, b)
+function Muscle.binary_einsum(::Muscle.BackendOMEinsum, inds_c, a::Tensor, b::Tensor)
     size_dict = Dict{Index,Int}()
     for (ind, ind_size) in Iterators.flatten([inds(a) .=> size(a), inds(b) .=> size(b)])
         size_dict[ind] = ind_size
@@ -39,7 +39,7 @@ function Muscle.binary_einsum(::Muscle.BackendOMEinsum, inds_c, a, b)
     return Tensor(data_c, inds_c)
 end
 
-function Muscle.binary_einsum!(::Muscle.BackendOMEinsum, c, a, b)
+function Muscle.binary_einsum!(::Muscle.BackendOMEinsum, c::Tensor, a::Tensor, b::Tensor)
     size_dict = Dict{Index,Int}()
     for (ind, ind_size) in Iterators.flatten([inds(a) .=> size(a), inds(b) .=> size(b)])
         size_dict[ind] = ind_size

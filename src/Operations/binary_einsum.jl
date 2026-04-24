@@ -31,7 +31,7 @@ function binary_einsum(a::Tensor, b::Tensor; dims=(∩(inds(a), inds(b))), out=n
     return binary_einsum(backend, inds_c, a, b)
 end
 
-Base.@nospecializeinfer function binary_einsum(@nospecialize(B::Backend), _, @nospecialize(a), @nospecialize(b))
+Base.@nospecializeinfer function binary_einsum(@nospecialize(B::Backend), _, @nospecialize(a::Tensor), @nospecialize(b::Tensor))
     throw(ArgumentError("`binary_einsum` not implemented or not loaded for backend $B"))
 end
 
@@ -42,8 +42,11 @@ function binary_einsum!(c::Tensor, a::Tensor, b::Tensor)
     return c
 end
 
-Base.@nospecializeinfer function binary_einsum!(@nospecialize(B::Backend), @nospecialize(_), @nospecialize(_), @nospecialize(_))
-    throw(ArgumentError("`binary_einsum!` not implemented or not loaded for backend $B"))
+Base.@nospecializeinfer function binary_einsum!(@nospecialize(B::Backend), @nospecialize(c::Tensor), @nospecialize(a::Tensor), @nospecialize(b::Tensor))
+    @debug "Fallback to generic `binary_einsum!` implementation for backend $B with intermediate copying."
+    _c = binary_einsum(B, inds(c), a, b)
+    copyto!(parent(c), parent(_c))
+    return c
 end
 
 Base.@nospecializeinfer function binary_einsum(::BackendBase, inds_c, @nospecialize(a::Tensor), @nospecialize(b::Tensor))
