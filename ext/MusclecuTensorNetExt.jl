@@ -153,11 +153,6 @@ function tensor_qr_thin!(::BackendCuTensorNet, Q, inds_q, R, inds_r, A, inds_a; 
 end
 
 ## `cuTensorNet`
-# function tensor_svd_thin(arch::GPU, A::Tensor; kwargs...)
-#     U, s, V = allocate_result(tensor_svd_thin, A; kwargs...)
-#     tensor_svd_thin!(arch, A, U, s, V; kwargs...)
-# end
-
 function tensor_svd_thin!(::BackendCuTensorNet, U::Tensor, s::Tensor, V::Tensor, A::Tensor; kwargs...)
     tensor_svd_thin!(
         BackendCuTensorNet(), parent(U), inds(U), parent(s), parent(V), inds(V), parent(A), inds(A); kwargs...

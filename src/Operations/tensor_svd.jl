@@ -30,24 +30,6 @@ Same as tensor_svd_thin() but with truncation, additional keyword arguments are
 function tensor_svd_trunc end
 function tensor_svd_trunc! end
 
-# function allocate_result(::typeof(tensor_svd_thin), A; inds_u=(), inds_v=(), ind_s=Index(gensym(:s)), kwargs...)
-#     inds_u, inds_v = factorinds(inds(A), inds_u, inds_v)
-#     left_extent = prod(Base.Fix1(size, A), inds_u)
-#     right_extent = prod(Base.Fix1(size, A), inds_v)
-#     s_extent = min(left_extent, right_extent)
-
-#     U = Tensor(similar(parent(A), left_extent..., s_extent), [inds_u..., ind_s])
-#     s = Tensor(similar(parent(A), s_extent), [ind_s])
-#     V = Tensor(similar(parent(A), right_extent..., s_extent), [inds_v..., ind_s])
-
-#     return U, s, V
-# end
-
-# function tensor_svd_thin!(A::Tensor, U::Tensor, s::Tensor, V::Tensor; kwargs...)
-#     @argcheck arch(A) == arch(U) == arch(s) == arch(V)
-#     tensor_svd_thin!(arch(A), A, U, s, V; kwargs...)
-# end
-
 function tensor_svd_thin(A::Tensor; inds_u=(), inds_v=(), ind_s=Index(gensym(:svd)), inplace=false, kwargs...)
     backend = getbackend(tensor_svd_thin, platform(A))
     return tensor_svd_thin(backend, A; inds_u, inds_v, ind_s, inplace, kwargs...)
@@ -57,10 +39,10 @@ Base.@nospecializeinfer function tensor_svd_thin(backend::Backend, @nospecialize
     throw(ArgumentError("`tensor_svd_thin` not implemented or not loaded for backend $backend"))
 end
 
-function tensor_svd_thin!(Q::Tensor, R::Tensor, A::Tensor; kwargs...)
-    _platform = promote_platform(platform(Q), platform(R), platform(A))
+function tensor_svd_thin!(U::Tensor, s::Tensor, V::Tensor, A::Tensor; kwargs...)
+    _platform = promote_platform(platform(U), platform(s), platform(V), platform(A))
     backend = getbackend(tensor_svd_thin!, _platform)
-    return tensor_svd_thin!(backend, Q, R, A; kwargs...)
+    return tensor_svd_thin!(backend, U, s, V, A; kwargs...)
 end
 
 function tensor_svd_thin!(B::Backend, U::Tensor, s::Tensor, V::Tensor, A::Tensor; kwargs...)

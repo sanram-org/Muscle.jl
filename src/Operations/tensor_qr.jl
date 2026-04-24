@@ -39,9 +39,6 @@ function tensor_qr_thin!(B::Backend, Q::Tensor, R::Tensor, A::Tensor; kwargs...)
         B, A; inds_q=setdiff(inds(Q), inds(R)), inds_r=setdiff(inds(R), inds(Q)), kwargs...
     )
 
-    @argcheck arch(tmp_Q) == arch(Q)
-    @argcheck arch(tmp_R) == arch(R)
-
     @argcheck inds(tmp_Q) == inds(Q)
     @argcheck inds(tmp_R) == inds(R)
 
