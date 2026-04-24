@@ -14,7 +14,10 @@
 > [!NOTE]
 > This is an updated and maintained fork of [bsc-quantic/Muscle.jl](https://github.com/bsc-quantic/Muscle.jl).
 
-Muscle.jl is a library for manipulation of tensors. It provides a `Tensor` type which wraps together an `AbstractArray` and a list of `Index`.
+Muscle.jl is a library for manipulation of tensors. It provides,
+- a `Tensor` type which wraps together an `AbstractArray` and a list of `Index`
+- a list of operations adapted to tensors (e.g. einsum, SVD, ...)
+- a multi-backend system to easily configure for best performance in multiple platforms
 
 For example, the following tensor,
 
@@ -206,8 +209,8 @@ The currently support table of backends and operations is,
 | unary_einsum      |                |             |                  |             |                |           | ✅           |            |
 | binary_einsum     | ✅              | ✅           | ✅                | ✅           | ✅              | ✅         | ✅           | ✅          |
 | tensor_qr_thin    | ✅              | ⌛           | ⌛                | -           | ✅              |           | -           | -          |
-| tensor_svd_thin   | ✅              | ⌛           | ⌛                | -           | ✅              |           | -           | -          |
-| tensor_svd_trunc  | ✅              |             |                  | -           |                |           | -           | -          |
+| tensor_svd_thin   | ✅              | ✅           | ⌛                | -           | ✅              |           | -           | -          |
+| tensor_svd_trunc  | ✅              | ✅            |                  | -           |                |           | -           | -          |
 | tensor_eigen_thin | ✅              | ⌛           | ⌛                | -           |                |           | -           | -          |
 | simple_update     | ✅              | ⌛           | -                | -           | ✅              |           | -           | -          |
 
