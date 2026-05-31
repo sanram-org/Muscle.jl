@@ -3,7 +3,7 @@ module Muscle
 using Compat
 using Reexport
 
-include("Utils/Utils.jl")
+include("Utils.jl")
 
 include("Index.jl")
 export Index, variance, Covariant, Contravariant
