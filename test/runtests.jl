@@ -10,7 +10,7 @@ using SafeTestsets
         @testset "hadamard" include("core/operations/hadamard.jl")
         @testset "unary_einsum" include("core/operations/unary_einsum.jl")
         @testset "binary_einsum" include("core/operations/binary_einsum.jl")
-        @testset "tensor_qr_thin" include("core/operations/tensor_qr_thin.jl")
+        @testset "tensor_qr" include("core/operations/tensor_qr.jl")
         @testset "tensor_svd_thin" include("core/operations/tensor_svd_thin.jl")
         @testset "tensor_svd_trunc" include("core/operations/tensor_svd_trunc.jl")
         @testset "tensor_eigen_thin" include("core/operations/tensor_eigen_thin.jl")

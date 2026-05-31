@@ -104,14 +104,14 @@ julia> binary_einsum(a, b)
 
 Some backends allow for batching indices. In particular, Reactant.jl and OMEinsum.jl.
 
-#### `tensor_qr_thin(!)`
+#### `tensor_qr(!)`
 
 Matrix QR adapted to n-order tensors with left and right indices.
 
 ```julia
 julia> a = Tensor([1 2; 3 4], [Index(:i), Index(:j)]);
 
-julia> q, r = tensor_qr_thin(a; ind_virtual=Index(:v))
+julia> q, r = tensor_qr(a; ind_virtual=Index(:v))
 ([-0.316227766016838 -0.9486832980505138; -0.9486832980505138 0.316227766016838], [-3.1622776601683795 -4.427188724235731; 0.0 -0.6324555320336751])
 
 julia> q
@@ -208,9 +208,9 @@ The currently support table of backends and operations is,
 | hadamard          | ✅              |             |                  |             |                |           |             |            |
 | unary_einsum      |                |             |                  |             |                |           | ✅           |            |
 | binary_einsum     | ✅              | ✅           | ✅                | ✅           | ✅              | ✅         | ✅           | ✅          |
-| tensor_qr_thin    | ✅              | ⌛           | ⌛                | -           | ✅              |           | -           | -          |
+| tensor_qr         | ✅              | ⌛           | ⌛                | -           | ✅              |           | -           | -          |
 | tensor_svd_thin   | ✅              | ✅           | ⌛                | -           | ✅              |           | -           | -          |
-| tensor_svd_trunc  | ✅              | ✅            |                  | -           |                |           | -           | -          |
+| tensor_svd_trunc  | ✅              | ✅           |                  | -           |                |           | -           | -          |
 | tensor_eigen_thin | ✅              | ⌛           | ⌛                | -           |                |           | -           | -          |
 | simple_update     | ✅              | ⌛           | -                | -           | ✅              |           | -           | -          |
 

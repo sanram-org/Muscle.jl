@@ -9,8 +9,8 @@ using Muscle: AbsorbBehavior, BackendCuTensorNet
 function __init__()
     Muscle.register_backend!(BackendCuTensorNet())
     Muscle.Operations.register_backend_for_op!(Muscle.Operations.simple_update, BackendCuTensorNet())
-    Muscle.Operations.register_backend_for_op!(Muscle.Operations.tensor_qr_thin, BackendCuTensorNet())
-    Muscle.Operations.register_backend_for_op!(Muscle.Operations.tensor_qr_thin!, BackendCuTensorNet())
+    Muscle.Operations.register_backend_for_op!(Muscle.Operations.tensor_qr, BackendCuTensorNet())
+    Muscle.Operations.register_backend_for_op!(Muscle.Operations.tensor_qr!, BackendCuTensorNet())
     Muscle.Operations.register_backend_for_op!(Muscle.Operations.tensor_svd_thin, BackendCuTensorNet())
     Muscle.Operations.register_backend_for_op!(Muscle.Operations.tensor_svd_thin!, BackendCuTensorNet())
 end
@@ -114,7 +114,7 @@ function simple_update(
 end
 
 ## `cuTensorNet`
-function tensor_qr_thin(
+function tensor_qr(
     ::BackendCuTensorNet, A::Tensor; inds_q=(), inds_r=(), ind_virtual=Index(gensym(:qr)), inplace=false, kwargs...
 )
     ind_virtual ∉ inds(A) || throw(ArgumentError("new virtual bond name ($ind_virtual) cannot be already be present"))
@@ -132,15 +132,15 @@ function tensor_qr_thin(
     Q = Tensor(CUDA.zeros(eltype(A), size_q..., size_virtual), inds_q)
     R = Tensor(CUDA.zeros(eltype(A), size_virtual, size_r...), inds_r)
 
-    tensor_qr_thin!(BackendCuTensorNet(), Q, R, A; kwargs...)
+    tensor_qr!(BackendCuTensorNet(), Q, R, A; kwargs...)
     return Q, R
 end
 
-function tensor_qr_thin!(::BackendCuTensorNet, Q::Tensor, R::Tensor, A::Tensor; kwargs...)
-    return tensor_qr_thin!(BackendCuTensorNet(), parent(Q), inds(Q), parent(R), inds(R), parent(A), inds(A); kwargs...)
+function tensor_qr!(::BackendCuTensorNet, Q::Tensor, R::Tensor, A::Tensor; kwargs...)
+    return tensor_qr!(BackendCuTensorNet(), parent(Q), inds(Q), parent(R), inds(R), parent(A), inds(A); kwargs...)
 end
 
-function tensor_qr_thin!(::BackendCuTensorNet, Q, inds_q, R, inds_r, A, inds_a; kwargs...)
+function tensor_qr!(::BackendCuTensorNet, Q, inds_q, R, inds_r, A, inds_a; kwargs...)
     modemap = Dict(ind => i for (i, ind) in enumerate(unique(inds_a ∪ inds_q ∪ inds_r)))
     modes_a = [modemap[ind] for ind in inds_a]
     modes_q = [modemap[ind] for ind in inds_q]

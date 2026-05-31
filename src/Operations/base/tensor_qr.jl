@@ -1,4 +1,4 @@
-function tensor_qr_thin(
+function tensor_qr(
     ::BackendBase, A; inds_q=(), inds_r=(), ind_virtual=Index(gensym(:qr)), inplace=false, kwargs...
 )
     ind_virtual ∉ inds(A) || throw(ArgumentError("new virtual bond name ($ind_virtual) cannot be already be present"))
@@ -23,10 +23,10 @@ function tensor_qr_thin(
     return Q, R
 end
 
-function tensor_qr_thin!(::BackendBase, Q::Tensor, R::Tensor, A::Tensor; kwargs...)
-    @warn "tensor_qr_thin! on BackendBase does intermediate copying. Consider using `tensor_qr_thin`."
+function tensor_qr!(::BackendBase, Q::Tensor, R::Tensor, A::Tensor; kwargs...)
+    @warn "tensor_qr! on BackendBase does intermediate copying. Consider using `tensor_qr`."
 
-    tmp_Q, tmp_R = tensor_qr_thin(
+    tmp_Q, tmp_R = tensor_qr(
         BackendBase(), A; inds_q=setdiff(inds(Q), inds(R)), inds_r=setdiff(inds(R), inds(Q)), kwargs...
     )
 

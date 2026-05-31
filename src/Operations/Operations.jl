@@ -21,7 +21,7 @@ export binary_einsum, binary_einsum!
 
 include("tensor_qr.jl")
 include("base/tensor_qr.jl")
-export tensor_qr_thin, tensor_qr_thin!
+export tensor_qr, tensor_qr!
 
 include("tensor_svd.jl")
 include("base/tensor_svd.jl")
@@ -49,8 +49,8 @@ const AVAILABLE_BACKENDS_FOR_OP = Dict{Function, Vector{Backend}}([
     unary_einsum! => Backend[],
     binary_einsum => Backend[BackendBase()],
     binary_einsum! => Backend[BackendBase()],
-    tensor_qr_thin => Backend[BackendBase()],
-    tensor_qr_thin! => Backend[BackendBase()],
+    tensor_qr => Backend[BackendBase()],
+    tensor_qr! => Backend[BackendBase()],
     tensor_svd_thin => Backend[BackendBase()],
     tensor_svd_thin! => Backend[BackendBase()],
     tensor_svd_trunc => Backend[BackendBase()],
@@ -87,11 +87,11 @@ const DEFAULT_BACKEND = Dict{Tuple{Function, Platform}, Backend}([
     (binary_einsum, PlatformDagger()) => BackendDagger(),
     (binary_einsum!, PlatformDagger()) => BackendDagger(),
 
-    # tensor_qr_thin
-    (tensor_qr_thin, PlatformHost()) => BackendBase(),
-    (tensor_qr_thin!, PlatformHost()) => BackendBase(),
-    (tensor_qr_thin, PlatformCUDA()) => BackendCuTensorNet(),
-    (tensor_qr_thin!, PlatformCUDA()) => BackendCuTensorNet(),
+    # tensor_qr
+    (tensor_qr, PlatformHost()) => BackendBase(),
+    (tensor_qr!, PlatformHost()) => BackendBase(),
+    (tensor_qr, PlatformCUDA()) => BackendCuTensorNet(),
+    (tensor_qr!, PlatformCUDA()) => BackendCuTensorNet(),
 
     # tensor_svd_thin
     (tensor_svd_thin, PlatformHost()) => BackendBase(),
