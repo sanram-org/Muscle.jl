@@ -1,4 +1,4 @@
-function tensor_svd_thin(
+function tensor_svd(
     ::BackendBase, A::Tensor; inds_u=(), inds_v=(), ind_s=Index(gensym(:vind)), inplace=false, kwargs...
 )
     inds_u, inds_v = factorinds(inds(A), inds_u, inds_v)

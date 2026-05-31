@@ -11,8 +11,8 @@ function __init__()
     Muscle.Operations.register_backend_for_op!(Muscle.Operations.simple_update, BackendCuTensorNet())
     Muscle.Operations.register_backend_for_op!(Muscle.Operations.tensor_qr, BackendCuTensorNet())
     Muscle.Operations.register_backend_for_op!(Muscle.Operations.tensor_qr!, BackendCuTensorNet())
-    Muscle.Operations.register_backend_for_op!(Muscle.Operations.tensor_svd_thin, BackendCuTensorNet())
-    Muscle.Operations.register_backend_for_op!(Muscle.Operations.tensor_svd_thin!, BackendCuTensorNet())
+    Muscle.Operations.register_backend_for_op!(Muscle.Operations.tensor_svd, BackendCuTensorNet())
+    Muscle.Operations.register_backend_for_op!(Muscle.Operations.tensor_svd!, BackendCuTensorNet())
 end
 
 # TODO customize SVD algorithm
@@ -153,13 +153,13 @@ function tensor_qr!(::BackendCuTensorNet, Q, inds_q, R, inds_r, A, inds_a; kwarg
 end
 
 ## `cuTensorNet`
-function tensor_svd_thin!(::BackendCuTensorNet, U::Tensor, s::Tensor, V::Tensor, A::Tensor; kwargs...)
-    tensor_svd_thin!(
+function tensor_svd!(::BackendCuTensorNet, U::Tensor, s::Tensor, V::Tensor, A::Tensor; kwargs...)
+    tensor_svd!(
         BackendCuTensorNet(), parent(U), inds(U), parent(s), parent(V), inds(V), parent(A), inds(A); kwargs...
     )
 end
 
-function tensor_svd_thin!(::BackendCuTensorNet, U, inds_u, s, V, inds_v, A, inds_a; kwargs...)
+function tensor_svd!(::BackendCuTensorNet, U, inds_u, s, V, inds_v, A, inds_a; kwargs...)
     modemap = Dict{Index,Int}(ind => i for (i, ind) in enumerate(unique(inds_a ∪ inds_u ∪ inds_v)))
     modes_a = [modemap[ind] for ind in inds(A)]
     modes_u = [modemap[ind] for ind in inds(U)]

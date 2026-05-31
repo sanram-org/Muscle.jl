@@ -125,14 +125,14 @@ julia> r
   0.0      -0.632456
 ```
 
-#### `tensor_svd_thin(!)`
+#### `tensor_svd(!)`
 
 Matrix Singular Value Decomposition (SVD) adapted to n-order tensors with left and right indices.
 
 ```julia
 julia> a = Tensor([1 2; 3 4], [Index(:i), Index(:j)]);
 
-julia> u,s,v = tensor_svd_thin(a)
+julia> u,s,v = tensor_svd(a)
 ([-0.40455358483375703 -0.9145142956773042; -0.9145142956773045 0.4045535848337568], [5.464985704219043, 0.3659661906262574], [-0.5760484367663209 0.8174155604703631; -0.8174155604703631 -0.5760484367663209])
 
 julia> u
@@ -150,10 +150,6 @@ julia> v
  -0.576048   0.817416
  -0.817416  -0.576048
 ```
-
-#### `tensor_svd_trunc(!)`
-
-Matrix Truncated Singular Value Decomposition (t-SVD) adapted to n-order tensors with left and right indices.
 
 #### `tensor_eigen_thin(!)`
 
@@ -209,8 +205,7 @@ The currently support table of backends and operations is,
 | unary_einsum      |                |             |                  |             |                |           | ✅           |            |
 | binary_einsum     | ✅              | ✅           | ✅                | ✅           | ✅              | ✅         | ✅           | ✅          |
 | tensor_qr         | ✅              | ⌛           | ⌛                | -           | ✅              |           | -           | -          |
-| tensor_svd_thin   | ✅              | ✅           | ⌛                | -           | ✅              |           | -           | -          |
-| tensor_svd_trunc  | ✅              | ✅           |                  | -           |                |           | -           | -          |
+| tensor_svd        | ✅              | ✅           | ⌛                | -           | ✅              |           | -           | -          |
 | tensor_eigen_thin | ✅              | ⌛           | ⌛                | -           |                |           | -           | -          |
 | simple_update     | ✅              | ⌛           | -                | -           | ✅              |           | -           | -          |
 

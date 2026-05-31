@@ -21,7 +21,7 @@ function __init__()
         Muscle.unary_einsum!,
         Muscle.binary_einsum,
         Muscle.binary_einsum!,
-        Muscle.tensor_svd_thin,
+        Muscle.tensor_svd,
     ]
         Muscle.Operations.register_backend_for_op!(op, BackendReactant())
     end
@@ -166,7 +166,7 @@ Base.@nospecializeinfer function Muscle.binary_einsum!(
 end
 
 # TODO batching dimensions?
-Base.@nospecializeinfer function Muscle.tensor_svd_thin(
+Base.@nospecializeinfer function Muscle.tensor_svd(
     ::BackendReactant, @nospecialize(A::Tensor); inds_u=(), inds_v=(), ind_s=Index(gensym(:vind)), inplace=false, kwargs...
 )
     inds_u, inds_v = factorinds(inds(A), inds_u, inds_v)

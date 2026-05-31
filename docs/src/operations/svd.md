@@ -6,7 +6,7 @@ using Muscle
 
 ```@repl example
 t = Tensor(rand(2,2,2,2), [:i,:j,:k,:l]);
-u, s, v = tensor_svd_thin(
+u, s, v = tensor_svd(
     t;
     inds_u = Index.([:i, :k]),
     inds_v = Index.([:j, :l]),

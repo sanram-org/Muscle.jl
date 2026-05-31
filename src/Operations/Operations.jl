@@ -25,7 +25,7 @@ export tensor_qr, tensor_qr!
 
 include("tensor_svd.jl")
 include("base/tensor_svd.jl")
-export tensor_svd_thin, tensor_svd_thin!, tensor_svd_trunc, tensor_svd_trunc!
+export tensor_svd, tensor_svd!
 
 include("tensor_eigen.jl")
 include("base/tensor_eigen.jl")
@@ -51,10 +51,8 @@ const AVAILABLE_BACKENDS_FOR_OP = Dict{Function, Vector{Backend}}([
     binary_einsum! => Backend[BackendBase()],
     tensor_qr => Backend[BackendBase()],
     tensor_qr! => Backend[BackendBase()],
-    tensor_svd_thin => Backend[BackendBase()],
-    tensor_svd_thin! => Backend[BackendBase()],
-    tensor_svd_trunc => Backend[BackendBase()],
-    tensor_svd_trunc! => Backend[BackendBase()],
+    tensor_svd => Backend[BackendBase()],
+    tensor_svd! => Backend[BackendBase()],
     tensor_eigen_thin => Backend[BackendBase()],
     tensor_eigen_thin! => Backend[BackendBase()],
     tensor_bieigen_thin => Backend[BackendBase()],
@@ -93,19 +91,13 @@ const DEFAULT_BACKEND = Dict{Tuple{Function, Platform}, Backend}([
     (tensor_qr, PlatformCUDA()) => BackendCuTensorNet(),
     (tensor_qr!, PlatformCUDA()) => BackendCuTensorNet(),
 
-    # tensor_svd_thin
-    (tensor_svd_thin, PlatformHost()) => BackendBase(),
-    (tensor_svd_thin!, PlatformHost()) => BackendBase(),
-    (tensor_svd_thin, PlatformCUDA()) => BackendCuTensorNet(),
-    (tensor_svd_thin!, PlatformCUDA()) => BackendCuTensorNet(),
-    (tensor_svd_thin, PlatformReactant()) => BackendReactant(),
-    (tensor_svd_thin!, PlatformReactant()) => BackendReactant(),
-
-    # tensor_svd_trunc
-    (tensor_svd_trunc, PlatformHost()) => BackendBase(),
-    (tensor_svd_trunc!, PlatformHost()) => BackendBase(),
-    (tensor_svd_trunc, PlatformCUDA()) => BackendCuTensorNet(),
-    (tensor_svd_trunc!, PlatformCUDA()) => BackendCuTensorNet(),
+    # tensor_svd
+    (tensor_svd, PlatformHost()) => BackendBase(),
+    (tensor_svd!, PlatformHost()) => BackendBase(),
+    (tensor_svd, PlatformCUDA()) => BackendCuTensorNet(),
+    (tensor_svd!, PlatformCUDA()) => BackendCuTensorNet(),
+    (tensor_svd, PlatformReactant()) => BackendReactant(),
+    (tensor_svd!, PlatformReactant()) => BackendReactant(),
 
     # tensor_eigen_thin
     (tensor_eigen_thin, PlatformHost()) => BackendBase(),

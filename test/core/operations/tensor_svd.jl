@@ -13,7 +13,7 @@ using LinearAlgebra
 
     A = Tensor(construct_test_array(T, Asize...), [Index(:i), Index(:j)])
 
-    U, Σ, Vt = Muscle.tensor_svd_thin(A; inds_u=[Index(:i)], ind_s=Index(:x), alg)
+    U, Σ, Vt = Muscle.tensor_svd(A; inds_u=[Index(:i)], ind_s=Index(:x), alg)
 
     F = LinearAlgebra.svd(parent(A); alg)
     Uref = Tensor(F.U, [Index(:i), Index(:x)])
@@ -31,20 +31,20 @@ end
 A = Tensor(rand(ComplexF64, 2, 4, 6, 8), [Index(:i), Index(:j), Index(:k), Index(:l)])
 
 # throw if inds_u is not provided
-@test_throws ArgumentError Muscle.tensor_svd_thin(A)
+@test_throws ArgumentError Muscle.tensor_svd(A)
 
 # throw if index is not present
-@test_throws ArgumentError Muscle.tensor_svd_thin(A; inds_u=[Index(:z)])
-@test_throws ArgumentError Muscle.tensor_svd_thin(A; inds_v=[Index(:z)])
+@test_throws ArgumentError Muscle.tensor_svd(A; inds_u=[Index(:z)])
+@test_throws ArgumentError Muscle.tensor_svd(A; inds_v=[Index(:z)])
 
 # throw if no inds left
-@test_throws ArgumentError Muscle.tensor_svd_thin(A; inds_u=[Index(:i), Index(:j), Index(:k), Index(:l)])
-@test_throws ArgumentError Muscle.tensor_svd_thin(A; inds_v=[Index(:i), Index(:j), Index(:k), Index(:l)])
+@test_throws ArgumentError Muscle.tensor_svd(A; inds_u=[Index(:i), Index(:j), Index(:k), Index(:l)])
+@test_throws ArgumentError Muscle.tensor_svd(A; inds_v=[Index(:i), Index(:j), Index(:k), Index(:l)])
 
 # throw if chosen virtual index already present
-@test_throws ArgumentError Muscle.tensor_svd_thin(A; inds_u=[Index(:i)], ind_s=Index(:j))
+@test_throws ArgumentError Muscle.tensor_svd(A; inds_u=[Index(:i)], ind_s=Index(:j))
 
-U, s, Vt = Muscle.tensor_svd_thin(A; inds_u=[Index(:i), Index(:j)], ind_s=Index(:x))
+U, s, Vt = Muscle.tensor_svd(A; inds_u=[Index(:i), Index(:j)], ind_s=Index(:x))
 
 @test inds(U) == [Index(:i), Index(:j), Index(:x)]
 @test inds(s) == [Index(:x)]

@@ -172,13 +172,13 @@ end
     @test @allowscalar Cre ≈ C
 end
 
-@testset "tensor_svd_thin" begin
+@testset "tensor_svd" begin
     @testset "$T - $Asize" for T in [Float64, ComplexF64], Asize in [(4,4), (4,5), (5,4)]
         A = Tensor(construct_test_array(T, Asize...), [Index(:i), Index(:j)])
         Are = adapt(ConcreteRArray, A)
 
         ind_s = Index(:x)
-        Ure, Sre, Vtre = @jit Muscle.tensor_svd_thin(Are; inds_u=[Index(:i)], ind_s, algorithm="QRIteration");
+        Ure, Sre, Vtre = @jit Muscle.tensor_svd(Are; inds_u=[Index(:i)], ind_s, algorithm="QRIteration");
         Areconstructed = @jit binary_einsum(hadamard(Ure, Sre), Vtre)
 
         @test @allowscalar isapprox(Areconstructed, A)
@@ -191,7 +191,7 @@ end
         Are = adapt(ConcreteRArray, A)
 
         ind_s = Index(:x)
-        Ure, Sre, Vtre = @jit Muscle.tensor_svd_thin(Are; inds_u, ind_s, algorithm="QRIteration")
+        Ure, Sre, Vtre = @jit Muscle.tensor_svd(Are; inds_u, ind_s, algorithm="QRIteration")
         Areconstructed = @jit binary_einsum(hadamard(Ure, Sre), Vtre)
 
         @test @allowscalar isapprox(Areconstructed, A)
