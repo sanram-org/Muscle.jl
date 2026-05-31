@@ -29,8 +29,8 @@ export tensor_svd, tensor_svd!
 
 include("tensor_eigen.jl")
 include("base/tensor_eigen.jl")
-export tensor_eigen_thin, tensor_eigen_thin!
-export tensor_bieigen_thin, tensor_bieigen_thin!
+export tensor_eigen, tensor_eigen!
+export tensor_bieigen, tensor_bieigen!
 
 include("simple_update.jl")
 include("base/simple_update.jl")
@@ -53,10 +53,10 @@ const AVAILABLE_BACKENDS_FOR_OP = Dict{Function, Vector{Backend}}([
     tensor_qr! => Backend[BackendBase()],
     tensor_svd => Backend[BackendBase()],
     tensor_svd! => Backend[BackendBase()],
-    tensor_eigen_thin => Backend[BackendBase()],
-    tensor_eigen_thin! => Backend[BackendBase()],
-    tensor_bieigen_thin => Backend[BackendBase()],
-    tensor_bieigen_thin! => Backend[BackendBase()],
+    tensor_eigen => Backend[BackendBase()],
+    tensor_eigen! => Backend[BackendBase()],
+    tensor_bieigen => Backend[BackendBase()],
+    tensor_bieigen! => Backend[BackendBase()],
     simple_update => Backend[BackendBase()],
     simple_update! => Backend[BackendBase()],
 ])
@@ -99,13 +99,13 @@ const DEFAULT_BACKEND = Dict{Tuple{Function, Platform}, Backend}([
     (tensor_svd, PlatformReactant()) => BackendReactant(),
     (tensor_svd!, PlatformReactant()) => BackendReactant(),
 
-    # tensor_eigen_thin
-    (tensor_eigen_thin, PlatformHost()) => BackendBase(),
-    (tensor_eigen_thin!, PlatformHost()) => BackendBase(),
+    # tensor_eigen
+    (tensor_eigen, PlatformHost()) => BackendBase(),
+    (tensor_eigen!, PlatformHost()) => BackendBase(),
 
-    # tensor_bieigen_thin
-    (tensor_bieigen_thin, PlatformHost()) => BackendBase(),
-    (tensor_bieigen_thin!, PlatformHost()) => BackendBase(),
+    # tensor_bieigen
+    (tensor_bieigen, PlatformHost()) => BackendBase(),
+    (tensor_bieigen!, PlatformHost()) => BackendBase(),
 
     # simple_update
     (simple_update, PlatformHost()) => BackendBase(),

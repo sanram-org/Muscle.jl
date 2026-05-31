@@ -1,4 +1,4 @@
-function tensor_eigen_thin(
+function tensor_eigen(
     ::BackendBase, A::Tensor; inds_u=(), inds_uinv=(), ind_lambda=Index(gensym(:vind)), inplace=false, kwargs...
 )
     inds_u, inds_uinv = factorinds(inds(A), inds_u, inds_uinv)
@@ -29,11 +29,11 @@ function tensor_eigen_thin(
 end
 
 # TODO how can we get the left_sizes for the Uinv matrix from `U`?
-function tensor_bieigen_thin(
+function tensor_bieigen(
     ::BackendBase, A::Tensor; inds_u=(), inds_uinv=(), ind_lambda=Index(gensym(:vind)), inplace=false, kwargs...
 )
     inds_u, inds_uinv = factorinds(inds(A), inds_u, inds_uinv)
-    Λ, U = tensor_eigen_thin(BackendBase(), A; inds_u, inds_uinv, ind_lambda, inplace, kwargs...)
+    Λ, U = tensor_eigen(BackendBase(), A; inds_u, inds_uinv, ind_lambda, inplace, kwargs...)
 
     Umat = reshape(parent(U), size(U, ind_lambda), prod(map(Base.Fix1(size, U), inds_u)))
 

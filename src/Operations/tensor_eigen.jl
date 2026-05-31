@@ -4,7 +4,7 @@ using ..Muscle: factorinds
 # TODO implement low-rank approximations (truncated eigen, reduced eigen...)
 
 """
-    Muscle.tensor_eigen_thin(tensor::Tensor; inds_u, inds_uinv, ind_lambda, kwargs...)
+    Muscle.tensor_eigen(tensor::Tensor; inds_u, inds_uinv, ind_lambda, kwargs...)
 
 Perform eigen factorization on a tensor. Either `inds_u` or `inds_uinv` must be specified.
 
@@ -16,30 +16,30 @@ Perform eigen factorization on a tensor. Either `inds_u` or `inds_uinv` must be 
   - `inplace`: If `true`, it will use `A` as workspace variable to save space. Defaults to `false`.
   - `kwargs...`: additional keyword arguments to be passed to `LinearAlgebra.eigen`.
 """
-function tensor_eigen_thin end
-function tensor_eigen_thin! end
+function tensor_eigen end
+function tensor_eigen! end
 
-function tensor_bieigen_thin end
-function tensor_bieigen_thin! end
+function tensor_bieigen end
+function tensor_bieigen! end
 
-function tensor_eigen_thin(
+function tensor_eigen(
     A::Tensor; inds_u=(), inds_uinv=(), ind_lambda=Index(gensym(:eigen)), inplace=false, kwargs...
 )
-    backend = getbackend(tensor_eigen_thin, platform(A))
-    return tensor_eigen_thin(backend, A; inds_u, inds_uinv, ind_lambda, inplace, kwargs...)
+    backend = getbackend(tensor_eigen, platform(A))
+    return tensor_eigen(backend, A; inds_u, inds_uinv, ind_lambda, inplace, kwargs...)
 end
 
-function tensor_bieigen_thin(
+function tensor_bieigen(
     A::Tensor; inds_u=(), inds_uinv=(), ind_lambda=Index(gensym(:eigen)), inplace=false, kwargs...
 )
-    backend = getbackend(tensor_bieigen_thin, platform(A))
-    return tensor_bieigen_thin(backend, A; inds_u, inds_uinv, ind_lambda, inplace, kwargs...)
+    backend = getbackend(tensor_bieigen, platform(A))
+    return tensor_bieigen(backend, A; inds_u, inds_uinv, ind_lambda, inplace, kwargs...)
 end
 
-function tensor_eigen_thin!(B::Backend, Λ::Tensor, U::Tensor, A::Tensor; kwargs...)
-    @warn "Fallback to generic `tensor_eigen_thin!` implementation for backend $B with intermediate copying."
+function tensor_eigen!(B::Backend, Λ::Tensor, U::Tensor, A::Tensor; kwargs...)
+    @warn "Fallback to generic `tensor_eigen!` implementation for backend $B with intermediate copying."
 
-    tmp_Λ, tmp_U = tensor_eigen_thin(B, A; inds_u=inds(U), ind_lambda=only(inds(Λ)), kwargs...)
+    tmp_Λ, tmp_U = tensor_eigen(B, A; inds_u=inds(U), ind_lambda=only(inds(Λ)), kwargs...)
 
     @argcheck inds(tmp_Λ) == inds(Λ)
     @argcheck inds(tmp_U) == inds(U)
@@ -53,10 +53,10 @@ function tensor_eigen_thin!(B::Backend, Λ::Tensor, U::Tensor, A::Tensor; kwargs
     return Λ, U
 end
 
-function tensor_bieigen_thin!(B::Backend, Uinv::Tensor, Λ::Tensor, U::Tensor, A::Tensor; kwargs...)
-    @warn "Fallback to generic `tensor_bieigen_thin!` implementation for backend $B with intermediate copying."
+function tensor_bieigen!(B::Backend, Uinv::Tensor, Λ::Tensor, U::Tensor, A::Tensor; kwargs...)
+    @warn "Fallback to generic `tensor_bieigen!` implementation for backend $B with intermediate copying."
 
-    tmp_Uinv, tmp_Λ, tmp_U = tensor_bieigen_thin(
+    tmp_Uinv, tmp_Λ, tmp_U = tensor_bieigen(
         B, A; inds_u=inds(U), inds_uinv=inds(Uinv), ind_lambda=only(inds(Λ)), kwargs...
     )
 

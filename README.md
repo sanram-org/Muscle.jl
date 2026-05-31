@@ -151,12 +151,12 @@ julia> v
  -0.817416  -0.576048
 ```
 
-#### `tensor_eigen_thin(!)`
+#### `tensor_eigen(!)`
 
 Matrix eigendecomposition adapted to n-order tensors with left and right indices.
 
 ```julia
-julia> λ, U = tensor_eigen_thin(a)
+julia> λ, U = tensor_eigen(a)
 ([-0.3722813232690143, 5.372281323269014], [-0.8245648401323938 -0.4159735579192842; 0.5657674649689923 -0.9093767091321241])
 
 julia> λ
@@ -199,15 +199,15 @@ Muscle.Operations.setbackend!(unary_einsum, Muscle.PlatformCUDA(), Muscle.Backen
 The currently support table of backends and operations is,
 
 <!-- | **Platform**      | Host | Reactant    | CUDA             | CUDA        | CUDA           | Dagger    | Host / CUDA | -->
-|                   | Base (stdlibs) | Reactant.jl | CUDA.jl (cuBLAS) | CuTENSOR.jl | CuTensorNet.jl | Dagger.jl | OMEinsum.jl | Strided.jl |
-| ----------------- | -------------- | ----------- | ---------------- | ----------- | -------------- | --------- | ----------- | ---------- |
-| hadamard          | ✅              |             |                  |             |                |           |             |            |
-| unary_einsum      |                |             |                  |             |                |           | ✅           |            |
-| binary_einsum     | ✅              | ✅           | ✅                | ✅           | ✅              | ✅         | ✅           | ✅          |
-| tensor_qr         | ✅              | ⌛           | ⌛                | -           | ✅              |           | -           | -          |
-| tensor_svd        | ✅              | ✅           | ⌛                | -           | ✅              |           | -           | -          |
-| tensor_eigen_thin | ✅              | ⌛           | ⌛                | -           |                |           | -           | -          |
-| simple_update     | ✅              | ⌛           | -                | -           | ✅              |           | -           | -          |
+|               | Base (stdlibs) | Reactant.jl | CUDA.jl (cuBLAS) | CuTENSOR.jl | CuTensorNet.jl | Dagger.jl | OMEinsum.jl | Strided.jl |
+| ------------- | -------------- | ----------- | ---------------- | ----------- | -------------- | --------- | ----------- | ---------- |
+| hadamard      | ✅              |             |                  |             |                |           |             |            |
+| unary_einsum  |                |             |                  |             |                |           | ✅           |            |
+| binary_einsum | ✅              | ✅           | ✅                | ✅           | ✅              | ✅         | ✅           | ✅          |
+| tensor_qr     | ✅              | ⌛           | ⌛                | -           | ✅              |           | -           | -          |
+| tensor_svd    | ✅              | ✅           | ⌛                | -           | ✅              |           | -           | -          |
+| tensor_eigen  | ✅              | ⌛           | ⌛                | -           |                |           | -           | -          |
+| simple_update | ✅              | ⌛           | -                | -           | ✅              |           | -           | -          |
 
 | Legend               |
 | -------------------- |
