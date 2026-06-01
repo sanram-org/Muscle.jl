@@ -22,22 +22,3 @@ function tensor_qr(
 
     return Q, R
 end
-
-function tensor_qr!(::BackendBase, Q::Tensor, R::Tensor, A::Tensor; kwargs...)
-    @warn "tensor_qr! on BackendBase does intermediate copying. Consider using `tensor_qr`."
-
-    tmp_Q, tmp_R = tensor_qr(
-        BackendBase(), A; inds_q=setdiff(inds(Q), inds(R)), inds_r=setdiff(inds(R), inds(Q)), kwargs...
-    )
-
-    @argcheck inds(tmp_Q) == inds(Q)
-    @argcheck inds(tmp_R) == inds(R)
-
-    @argcheck size(tmp_Q) == size(Q)
-    @argcheck size(tmp_R) == size(R)
-
-    copyto!(Q, tmp_Q)
-    copyto!(R, tmp_R)
-
-    return Q, R
-end

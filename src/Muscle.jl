@@ -1,7 +1,6 @@
 module Muscle
 
 using Compat
-using Reexport
 
 include("Utils.jl")
 
@@ -16,10 +15,7 @@ export Tensor, inds, isisometry
 
 include("Platform.jl")
 include("Backend.jl")
-
-include("Operations/Operations.jl")
-@reexport using .Operations
-
+include("Operations.jl")
 include("Testing.jl")
 
 # precompilation
