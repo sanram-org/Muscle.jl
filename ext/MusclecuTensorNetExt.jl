@@ -9,9 +9,7 @@ function __init__()
     Muscle.register_backend!(BackendCuTensorNet())
     Muscle.Operations.register_backend_for_op!(Muscle.Operations.simple_update, BackendCuTensorNet())
     Muscle.Operations.register_backend_for_op!(Muscle.Operations.tensor_qr, BackendCuTensorNet())
-    Muscle.Operations.register_backend_for_op!(Muscle.Operations.tensor_qr!, BackendCuTensorNet())
     Muscle.Operations.register_backend_for_op!(Muscle.Operations.tensor_svd, BackendCuTensorNet())
-    Muscle.Operations.register_backend_for_op!(Muscle.Operations.tensor_svd!, BackendCuTensorNet())
 end
 
 # TODO customize SVD algorithm
@@ -112,7 +110,6 @@ function simple_update(
     end
 end
 
-## `cuTensorNet`
 function tensor_qr(
     ::BackendCuTensorNet, A::Tensor; inds_q=(), inds_r=(), ind_virtual=Index(gensym(:qr)), inplace=false, kwargs...
 )
@@ -131,34 +128,45 @@ function tensor_qr(
     Q = Tensor(CUDA.zeros(eltype(A), size_q..., size_virtual), inds_q)
     R = Tensor(CUDA.zeros(eltype(A), size_virtual, size_r...), inds_r)
 
-    tensor_qr!(BackendCuTensorNet(), Q, R, A; kwargs...)
+    cu_tensor_qr!(parent(Q), inds(Q), parent(R), inds(R), parent(A), inds(A); kwargs...)
     return Q, R
 end
 
-function tensor_qr!(::BackendCuTensorNet, Q::Tensor, R::Tensor, A::Tensor; kwargs...)
-    return tensor_qr!(BackendCuTensorNet(), parent(Q), inds(Q), parent(R), inds(R), parent(A), inds(A); kwargs...)
-end
-
-function tensor_qr!(::BackendCuTensorNet, Q, inds_q, R, inds_r, A, inds_a; kwargs...)
+function cu_tensor_qr!(Q, inds_q, R, inds_r, A, inds_a; kwargs...)
     modemap = Dict(ind => i for (i, ind) in enumerate(unique(inds_a ∪ inds_q ∪ inds_r)))
     modes_a = [modemap[ind] for ind in inds_a]
     modes_q = [modemap[ind] for ind in inds_q]
     modes_r = [modemap[ind] for ind in inds_r]
 
-    # call to cuTensorNet SVD method is implemented as `LinearAlgebra.qr!`
+    # call to cuTensorNet QR method is implemented as `LinearAlgebra.qr!`
     LinearAlgebra.qr!(A, modes_a, Q, modes_q, R, modes_r; kwargs...)
 
     return Q, R
 end
 
-## `cuTensorNet`
-function tensor_svd!(::BackendCuTensorNet, U::Tensor, s::Tensor, V::Tensor, A::Tensor; kwargs...)
-    tensor_svd!(
-        BackendCuTensorNet(), parent(U), inds(U), parent(s), parent(V), inds(V), parent(A), inds(A); kwargs...
-    )
+function tensor_svd(::BackendCuTensorNet, A::Tensor; dims, kwargs...)
+    ind_virtual ∉ inds(A) || throw(ArgumentError("new virtual bond name ($ind_virtual) cannot be already be present"))
+
+    inds_u, inds_v = factorinds(inds(A), inds_u, inds_v)
+    @assert issetequal(inds_u ∪ inds_v, inds(A))
+
+    size_u = map(Base.Fix1(size, A), inds_u)
+    size_v = map(Base.Fix1(size, A), inds_v)
+    size_virtual = min(prod(size_u), prod(size_v))
+
+    inds_u = [inds_u..., ind_virtual]
+    inds_v = [ind_virtual, inds_v...]
+
+    U = Tensor(CUDA.zeros(eltype(A), size_u..., size_virtual), inds_u)
+    S = Tensor(CUDA.zeros(eltype(A), size_virtual), [ind_virtual])
+    Vt = Tensor(CUDA.zeros(eltype(A), size_virtual, size_v...), inds_v)
+
+    cu_tensor_svd!(parent(U), inds(U), parent(S), parent(V), inds(V), parent(A), inds(A); kwargs...)
+
+    return U, s, Vt
 end
 
-function tensor_svd!(::BackendCuTensorNet, U, inds_u, s, V, inds_v, A, inds_a; kwargs...)
+function cu_tensor_svd!(U, inds_u, s, V, inds_v, A, inds_a; kwargs...)
     modemap = Dict{Index,Int}(ind => i for (i, ind) in enumerate(unique(inds_a ∪ inds_u ∪ inds_v)))
     modes_a = [modemap[ind] for ind in inds(A)]
     modes_u = [modemap[ind] for ind in inds(U)]
