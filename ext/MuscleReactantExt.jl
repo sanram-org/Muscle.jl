@@ -8,7 +8,6 @@ using Reactant.TracedUtils: set_mlir_data!, get_mlir_data
 const MLIR = Reactant.MLIR
 const stablehlo = MLIR.Dialects.stablehlo
 using PrecompileTools
-using ArgCheck
 using LinearAlgebra
 
 function __init__()
@@ -170,9 +169,9 @@ Base.@nospecializeinfer function Muscle.tensor_svd(
     ::BackendReactant, @nospecialize(A::Tensor); inds_u=(), inds_v=(), ind_s=Index(gensym(:vind)), inplace=false, kwargs...
 )
     inds_u, inds_v = factorinds(inds(A), inds_u, inds_v)
-    @argcheck isdisjoint(inds_u, inds_v)
-    @argcheck issetequal(inds_u ∪ inds_v, inds(A))
-    @argcheck ind_s ∉ inds(A)
+    @assert isdisjoint(inds_u, inds_v)
+    @assert issetequal(inds_u ∪ inds_v, inds(A))
+    @assert ind_s ∉ inds(A)
 
     # permute array
     left_sizes = map(Base.Fix1(size, A), inds_u)

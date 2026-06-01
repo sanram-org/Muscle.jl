@@ -4,7 +4,7 @@ function tensor_qr(
     ind_virtual ∉ inds(A) || throw(ArgumentError("new virtual bond name ($ind_virtual) cannot be already be present"))
 
     inds_q, inds_r = factorinds(inds(A), inds_q, inds_r)
-    @argcheck issetequal(inds_q ∪ inds_r, inds(A))
+    @assert issetequal(inds_q ∪ inds_r, inds(A))
 
     # permute array
     left_sizes = map(Base.Fix1(size, A), inds_q)

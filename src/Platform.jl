@@ -1,5 +1,3 @@
-using ArgCheck
-
 abstract type Platform end
 
 struct PlatformHost <: Platform end

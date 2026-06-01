@@ -2,9 +2,9 @@ function tensor_eigen(
     ::BackendBase, A::Tensor; inds_u=(), inds_uinv=(), ind_lambda=Index(gensym(:vind)), inplace=false, kwargs...
 )
     inds_u, inds_uinv = factorinds(inds(A), inds_u, inds_uinv)
-    @argcheck isdisjoint(inds_u, inds_uinv)
-    @argcheck issetequal(inds_u ∪ inds_uinv, inds(A))
-    @argcheck ind_lambda ∉ inds(A)
+    @assert isdisjoint(inds_u, inds_uinv)
+    @assert issetequal(inds_u ∪ inds_uinv, inds(A))
+    @assert ind_lambda ∉ inds(A)
 
     # permute array
     left_sizes = map(Base.Fix1(size, A), inds_uinv)

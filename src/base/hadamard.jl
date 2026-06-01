@@ -10,7 +10,7 @@ function hadamard!(::BackendBase, c::Tensor, a::Tensor, b::Tensor)
     # `b` must be broadcastable to `a`
     ndims(a) >= ndims(b) || return hadamard!(BackendBase(), c, b, a)
 
-    @argcheck inds(c) == inds(a)
+    @assert inds(c) == inds(a)
 
     # check if this is just a tensor-scalar multiplication
     if ndims(b) == 0

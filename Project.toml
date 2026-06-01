@@ -4,7 +4,6 @@ version = "0.4.0"
 authors = ["Sergio Sánchez Ramírez and contributors"]
 
 [deps]
-ArgCheck = "dce04be8-c92d-5529-be00-80e4d2c0e197"
 Compat = "34da2185-b29b-5c13-b0c7-acf172513d20"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 PrecompileTools = "aea7be01-6a6a-4083-8856-8a6e6704d82a"
@@ -37,7 +36,6 @@ MusclecuTensorNetExt = ["CUDA", "cuTensorNet"]
 
 [compat]
 Adapt = "4"
-ArgCheck = "2.5.0"
 CUDA = "5.7.0"
 ChainRulesCore = "1.0"
 Compat = "4.18.1"

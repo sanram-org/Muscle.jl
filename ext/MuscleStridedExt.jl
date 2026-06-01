@@ -4,7 +4,6 @@ using Muscle
 using Muscle: BackendStrided, arraytype
 using Strided
 using StridedViews
-using ArgCheck
 
 function __init__()
     Muscle.register_backend!(BackendStrided())
@@ -29,8 +28,8 @@ function Muscle.binary_einsum(
     inds_right = setdiff(inds(b), inds_contract)
 
     # can't deal with hyperindices
-    @argcheck isdisjoint(inds_c, inds_contract)
-    @argcheck issetequal(inds_c, symdiff(inds(a), inds(b)))
+    @assert isdisjoint(inds_c, inds_contract)
+    @assert issetequal(inds_c, symdiff(inds(a), inds(b)))
 
     sizes_c = map(inds_c) do ind
         if ind in inds_left
@@ -58,8 +57,8 @@ function Muscle.binary_einsum!(
     inds_right = setdiff(inds(b), inds_contract)
 
     # can't deal with hyperindices
-    @argcheck isdisjoint(inds(c), inds_contract)
-    @argcheck issetequal(inds(c), symdiff(inds(a), inds(b)))
+    @assert isdisjoint(inds(c), inds_contract)
+    @assert issetequal(inds(c), symdiff(inds(a), inds(b)))
 
     sizes_left = map(Base.Fix1(size, a), inds_left)
     sizes_right = map(Base.Fix1(size, b), inds_right)

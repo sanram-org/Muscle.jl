@@ -1,6 +1,5 @@
 module MusclecuTensorNetExt
 
-using ArgCheck
 using CUDA
 using cuTensorNet: cuTensorNet
 using Muscle
@@ -120,7 +119,7 @@ function tensor_qr(
     ind_virtual ∉ inds(A) || throw(ArgumentError("new virtual bond name ($ind_virtual) cannot be already be present"))
 
     inds_q, inds_r = factorinds(inds(A), inds_q, inds_r)
-    @argcheck issetequal(inds_q ∪ inds_r, inds(A))
+    @assert issetequal(inds_q ∪ inds_r, inds(A))
 
     size_q = map(Base.Fix1(size, A), inds_q)
     size_r = map(Base.Fix1(size, A), inds_r)

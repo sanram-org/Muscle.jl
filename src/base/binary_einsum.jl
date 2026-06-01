@@ -4,8 +4,8 @@ Base.@nospecializeinfer function binary_einsum(::BackendBase, inds_c, @nospecial
     inds_right = setdiff(inds(b), inds_contract)
 
     # can't deal with hyperindices
-    @argcheck isdisjoint(inds_c, inds_contract) "`BackendBase` can't deal with batching indices. Load OMEinsum and use `BackendOMEinsum` instead."
-    @argcheck issetequal(inds_c, symdiff(inds(a), inds(b))) "`BackendBase` can't deal with batching indices. Load OMEinsum and use `BackendOMEinsum` instead."
+    @assert isdisjoint(inds_c, inds_contract) "`BackendBase` can't deal with batching indices. Load OMEinsum and use `BackendOMEinsum` instead."
+    @assert issetequal(inds_c, symdiff(inds(a), inds(b))) "`BackendBase` can't deal with batching indices. Load OMEinsum and use `BackendOMEinsum` instead."
 
     sizes_left = Int[size(a, ind) for ind in inds_left]
     sizes_right = Int[size(b, ind) for ind in inds_right]
@@ -26,11 +26,11 @@ Base.@nospecializeinfer function binary_einsum!(::BackendBase, @nospecialize(c::
     inds_right = setdiff(inds(b), inds_contract)
 
     # can't deal with hyperindices / batching indices
-    @argcheck isdisjoint(inds(c), inds_contract) "`BackendBase` can't deal with batching indices. Load OMEinsum and use `BackendOMEinsum` instead."
-    @argcheck issetequal(inds(c), symdiff(inds(a), inds(b))) "`BackendBase` can't deal with batching indices. Load OMEinsum and use `BackendOMEinsum` instead."
+    @assert isdisjoint(inds(c), inds_contract) "`BackendBase` can't deal with batching indices. Load OMEinsum and use `BackendOMEinsum` instead."
+    @assert issetequal(inds(c), symdiff(inds(a), inds(b))) "`BackendBase` can't deal with batching indices. Load OMEinsum and use `BackendOMEinsum` instead."
 
     # can't deal with inplace permutedims
-    @argcheck inds(c) == [inds_left; inds_right] "`BackendBase` can't deal with inplace permutedims. Load OMEinsum and use `BackendOMEinsum` instead."
+    @assert inds(c) == [inds_left; inds_right] "`BackendBase` can't deal with inplace permutedims. Load OMEinsum and use `BackendOMEinsum` instead."
 
     sizes_left = Int[size(a, ind) for ind in inds_left]
     sizes_right = Int[size(b, ind) for ind in inds_right]

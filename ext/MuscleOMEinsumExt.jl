@@ -3,7 +3,6 @@ module MuscleOMEinsumExt
 using Muscle
 using Muscle: BackendOMEinsum
 using OMEinsum
-using ArgCheck
 
 function __init__()
     Muscle.register_backend!(BackendOMEinsum())
@@ -20,7 +19,7 @@ function Muscle.unary_einsum(::BackendOMEinsum, inds_y, x::Tensor)
 end
 
 function Muscle.unary_einsum!(::BackendOMEinsum, y::Tensor, x::Tensor)
-    @argcheck inds(y) ⊆ inds(x) "Output indices must be a subset of input indices"
+    @assert inds(y) ⊆ inds(x) "Output indices must be a subset of input indices"
 
     size_dict = Dict(inds(x) .=> size(x))
     OMEinsum.einsum!((inds(x),), inds(y), (parent(x),), parent(y), true, false, size_dict)
