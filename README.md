@@ -70,23 +70,6 @@ julia> binary_einsum(a, b)
 
 This is a list of primitive operations that Muscle can dispatch to different backends.
 
-#### `hadamard(!)`
-
-a.k.a. element-wise multiplication.
-
-```julia
-julia> a = Tensor([1 2; 3 4], [Index(:i), Index(:j)]);
-
-julia> hadamard(a, a)
-2×2 Tensor(::Matrix{Int64}) with signature ij:
- 1   4
- 9  16
-```
-
-#### `unary_einsum(!)`
-
-Can be used directly through `Muscle.einsum(!)`.
-
 #### `binary_einsum(!)`
 
 Tensor contraction. Can be used directly through `Muscle.einsum(!)`.
@@ -201,7 +184,6 @@ The currently support table of backends and operations is,
 <!-- | **Platform**      | Host | Reactant    | CUDA             | CUDA        | CUDA           | Dagger    | Host / CUDA | -->
 |               | Base (stdlibs) | Reactant.jl | CUDA.jl (cuBLAS) | CuTENSOR.jl | CuTensorNet.jl | Dagger.jl | OMEinsum.jl | Strided.jl |
 | ------------- | -------------- | ----------- | ---------------- | ----------- | -------------- | --------- | ----------- | ---------- |
-| hadamard      | ✅              |             |                  |             |                |           |             |            |
 | unary_einsum  |                |             |                  |             |                |           | ✅           |            |
 | binary_einsum | ✅              | ✅           | ✅                | ✅           | ✅              | ✅         | ✅           | ✅          |
 | tensor_qr     | ✅              | ⌛           | ⌛                | -           | ✅              |           | -           | -          |

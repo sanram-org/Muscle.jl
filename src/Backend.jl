@@ -72,8 +72,6 @@ Base.@nospecializeinfer function available_backends(@nospecialize(op::Function),
 end
 
 const AVAILABLE_BACKENDS_FOR_OP = Dict{Function, Vector{Backend}}([
-    # hadamard => Backend[BackendBase()],
-    # hadamard! => Backend[BackendBase()],
     # unary_einsum => Backend[],
     # unary_einsum! => Backend[],
     binary_einsum => Backend[BackendBase()],
@@ -81,17 +79,11 @@ const AVAILABLE_BACKENDS_FOR_OP = Dict{Function, Vector{Backend}}([
     tensor_qr => Backend[BackendBase()],
     tensor_svd => Backend[BackendBase()],
     tensor_eigen => Backend[BackendBase()],
-    tensor_bieigen => Backend[BackendBase()],
     simple_update => Backend[BackendBase()],
     # simple_update! => Backend[BackendBase()],
 ])
 
 const DEFAULT_BACKEND = Dict{Tuple{Function, Platform}, Backend}([
-    # hadamard
-    # (hadamard, PlatformHost()) => BackendBase(),
-    # (hadamard!, PlatformHost()) => BackendBase(),
-    # (hadamard, PlatformReactant()) => BackendReactant(),
-
     # unary_einsum
     # (unary_einsum, PlatformHost()) => BackendOMEinsum(),
     # (unary_einsum!, PlatformHost()) => BackendOMEinsum(),
@@ -121,9 +113,6 @@ const DEFAULT_BACKEND = Dict{Tuple{Function, Platform}, Backend}([
 
     # tensor_eigen
     (tensor_eigen, PlatformHost()) => BackendBase(),
-
-    # tensor_bieigen
-    (tensor_bieigen, PlatformHost()) => BackendBase(),
 
     # simple_update
     (simple_update, PlatformHost()) => BackendBase(),

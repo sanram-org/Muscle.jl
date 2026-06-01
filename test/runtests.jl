@@ -7,7 +7,6 @@ using SafeTestsets
     @testset "IndexList" include("core/indexlist.jl")
     @testset "Tensor" include("core/tensor.jl")
     @testset "Operations" verbose = true begin
-        @testset "hadamard" include("core/operations/hadamard.jl")
         @testset "unary_einsum" include("core/operations/unary_einsum.jl")
         @testset "binary_einsum" include("core/operations/binary_einsum.jl")
         @testset "tensor_qr" include("core/operations/tensor_qr.jl")
