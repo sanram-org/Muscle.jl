@@ -51,11 +51,11 @@ function binary_einsum!(@nospecialize(c::AbstractArray), @nospecialize(a::Abstra
     batch = Int[size(a, i) for i in batching_dims[1]]
     out_a = Int[size(a, i) for i in 1:ndims(a) if i ∉ contracting_dims[1]]
     out_b = Int[size(b, i) for i in 1:ndims(b) if i ∉ contracting_dims[2]]
-    @assert size(c) == vcat(batch, out_a, out_b)
+    @assert size(c) == Tuple(vcat(batch, out_a, out_b))
 
     _platform = promote_platform(platform(c), platform(a), platform(b))
     backend = getbackend(binary_einsum!, _platform)
-    binary_einsum!(backend, c, a, b; dims)
+    binary_einsum!(backend, c, a, b; contracting_dims, batching_dims)
     return c
 end
 
@@ -69,7 +69,7 @@ end
 @nospecializeinfer function binary_einsum!(::BackendBase, @nospecialize(c::AbstractArray), @nospecialize(a::AbstractArray), @nospecialize(b::AbstractArray); contracting_dims, batching_dims)
     @assert isempty(batching_dims[1]) "Batch `binary_einsum` not yet supported in BackendBase"
 
-    inner_inds_a, inner_inds_b = contracting_dims
+    inner_inds_a, inner_inds_b = collect.(contracting_dims)
     outer_inds_a = Int[i for i in 1:ndims(a) if i ∉ inner_inds_a]
     outer_inds_b = Int[i for i in 1:ndims(b) if i ∉ inner_inds_b]
 
@@ -77,12 +77,11 @@ end
     sizes_right = Int[size(b, i) for i in outer_inds_b]
     sizes_contract = Int[size(a, i) for i in inner_inds_a]
 
-    a_mat = reshape(parent(permutedims(a, Int[inds_left; inds_contract])), prod(sizes_left), prod(sizes_contract))
-    b_mat = reshape(parent(permutedims(b, Int[inds_contract; inds_right])), prod(sizes_contract), prod(sizes_right))
+    a_mat = reshape(parent(permutedims(a, Int[outer_inds_a; inner_inds_a])), prod(sizes_left), prod(sizes_contract))
+    b_mat = reshape(parent(permutedims(b, Int[inner_inds_b; outer_inds_b])), prod(sizes_contract), prod(sizes_right))
     c_mat = reshape(c, prod(sizes_left), prod(sizes_right))
 
     LinearAlgebra.mul!(c_mat, a_mat, b_mat)
-
     return c
 end
 
@@ -189,14 +188,12 @@ struct AbsorbEqually <: AbsorbBehavior end
     dim_physical_b,
     dim_bond_a,
     dim_bond_b,
-    dims_g_a,
-    dims_g_b,
     absorb=DontAbsorb,
     kwargs...
 )
     _platform = promote_platform(platform(a), platform(b), platform(g))
     backend = getbackend(simple_update, _platform)
-    return simple_update(backend, a, b, g; dim_physical_a, dim_physical_b, dim_bond_a, dim_bond_b, dims_g_a, dims_g_b, absorb, kwargs...)
+    return simple_update(backend, a, b, g; dim_physical_a, dim_physical_b, dim_bond_a, dim_bond_b, absorb, kwargs...)
 end
 
 @nospecializeinfer function simple_update(
