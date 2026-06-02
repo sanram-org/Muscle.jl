@@ -10,7 +10,7 @@ include("Tensor.jl")
 include("Testing.jl")
 
 export variance, Covariant, Contravariant, Invariant
-export Tensor, isisometry
+export Tensor, einsum, einsum!, isisometry
 
 # precompilation
 using PrecompileTools
