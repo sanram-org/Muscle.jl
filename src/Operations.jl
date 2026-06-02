@@ -23,13 +23,13 @@ function binary_einsum(@nospecialize(a::AbstractArray), @nospecialize(b::Abstrac
     check_binary_einsum(a, b, contracting_dims, batching_dims)
     _platform = promote_platform(platform(a), platform(b))
     backend = getbackend(binary_einsum, _platform)
-    return binary_einsum(backend, a, b; dims)
+    return binary_einsum(backend, a, b; contracting_dims, batching_dims)
 end
 
 @nospecializeinfer function binary_einsum(::BackendBase, @nospecialize(a::AbstractArray), @nospecialize(b::AbstractArray); contracting_dims, batching_dims)
     @assert isempty(batching_dims[1]) "Batch `binary_einsum` not yet supported in BackendBase"
 
-    inner_inds_a, inner_inds_b = contracting_dims
+    inner_inds_a, inner_inds_b = collect.(contracting_dims)
     outer_inds_a = Int[i for i in 1:ndims(a) if i ∉ inner_inds_a]
     outer_inds_b = Int[i for i in 1:ndims(b) if i ∉ inner_inds_b]
 
@@ -37,8 +37,8 @@ end
     sizes_right = Int[size(b, i) for i in outer_inds_b]
     sizes_contract = Int[size(a, i) for i in inner_inds_a]
 
-    a_mat = reshape(parent(permutedims(a, Int[inds_left; inds_contract])), prod(sizes_left), prod(sizes_contract))
-    b_mat = reshape(parent(permutedims(b, Int[inds_contract; inds_right])), prod(sizes_contract), prod(sizes_right))
+    a_mat = reshape(parent(permutedims(a, Int[outer_inds_a; inner_inds_a])), prod(sizes_left), prod(sizes_contract))
+    b_mat = reshape(parent(permutedims(b, Int[inner_inds_b; outer_inds_b])), prod(sizes_contract), prod(sizes_right))
 
     c_mat = a_mat * b_mat
     c = reshape(c_mat, sizes_left..., sizes_right...)
@@ -220,8 +220,12 @@ end
     Θ = binary_einsum(B, a, b; contracting_dims=((dim_bond_a,), (dim_bond_b,)))
 
     # contract state tensor with gate
-    dim_physical_a > dim_bond_a && dim_physical_a -= 1
-    dim_physical_b > dim_bond_b && dim_physical_b -= 1
+    if dim_physical_a > dim_bond_a
+        dim_physical_a -= 1
+    end
+    if dim_physical_b > dim_bond_b
+        dim_physical_b -= 1
+    end
     dim_physical_b += ndims(a) - 1
     Θ = binary_einsum(B, Θ, g; contracting_dims=((dim_physical_a, dim_physical_b), (dims_g_a[1], dims_g_b[2])))
 
@@ -231,15 +235,23 @@ end
 
     for i in 1:ndims(a)
         j = i
-        i > dim_physical_a && j -= 1
-        i > dim_bond_a && j -= 1
+        if i > dim_physical_a
+            j -= 1
+        end
+        if i > dim_bond_a
+            j -= 1
+        end
         push!(dims_outer_a, j)
     end
 
     for i in 1:ndims(b)
         j = i + ndims(a) - 2
-        i > dim_physical_b && j -= 1
-        i > dim_bond_a && j -= 1
+        if i > dim_physical_b
+            j -= 1
+        end
+        if i > dim_bond_a
+            j -= 1
+        end
         push!(dims_outer_b, j)
     end
 
@@ -279,10 +291,10 @@ end
 
 # error on fallback methods
 for (op, args, kwargs) in [
-    (binary_einsum, :(a::AbstractArray, b::AbstractArray), :(contracting_dims, batching_dims)),
-    (tensor_qr, :(A::AbstractArray), :(kwargs...)),
-    (tensor_svd, :(A::AbstractArray), :(kwargs...)),
-    (tensor_eigen, :(A::AbstractArray), :(kwargs...)),
+    (:binary_einsum, :(a::AbstractArray, b::AbstractArray), :(contracting_dims, batching_dims)),
+    (:tensor_qr, :(A::AbstractArray), :(kwargs...)),
+    (:tensor_svd, :(A::AbstractArray), :(kwargs...)),
+    (:tensor_eigen, :(A::AbstractArray), :(kwargs...)),
 ]
     sign_args_nospec = [:(@nospecialize($arg)) for arg in args.args]
     sign_kwargs_nospec = [:($kwarg) for kwarg in kwargs.args]
