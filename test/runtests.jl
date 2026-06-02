@@ -3,6 +3,7 @@ using Test
 using SafeTestsets
 
 @testset "Unit" verbose = true begin
+    @testset "Variance" include("core/variance.jl")
     @testset "Tensor" include("core/tensor.jl")
     @testset "Operations" verbose = true begin
         @testset "unary_einsum" include("core/operations/unary_einsum.jl")
