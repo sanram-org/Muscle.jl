@@ -283,21 +283,48 @@ end
     if !isnothing(maxdim)
         u = selectdim(u, ndims(u), 1:min(maxdim, length(s)))
         s = selectdim(s, 1, 1:min(maxdim, length(s)))
-        vt = selectdim(v, 1, 1:min(maxdim, length(s)))
+        vt = selectdim(vt, 1, 1:min(maxdim, length(s)))
     end
 
     normalize && LinearAlgebra.normalize!(s)
 
+    # leave dims as originally found
+    perm = collect(1:ndims(u))
+    filter!(x -> x != dim_physical_a && x != dim_bond_a, perm)
+    push!(perm, dim_physical_a)
+    push!(perm, dim_bond_a)
+    @show perm
+    perm = invperm(perm)
+    u = permutedims(u, perm)
+
+    perm = collect(1:ndims(vt))
+    filter!(x -> x != dim_physical_b && x != dim_bond_b, perm)
+    push!(perm, dim_physical_b)
+    pushfirst!(perm, dim_bond_b)
+    @show perm
+    perm = invperm(perm)
+    vt = permutedims(vt, perm)
+
     if absorb isa DontAbsorb
         return u, s, vt
     elseif absorb isa AbsorbU
-        u = u .* reshape(s, Int[ones(Int, ndims(u)-1); length(s)])
+        shape = ones(Int, ndims(u))
+        shape[dim_bond_a] = length(s)
+        u = u .* reshape(s, Tuple(shape))
     elseif absorb isa AbsorbV
-        vt = vt .* reshape(s, Int[length(s); ones(Int, ndims(vt) - 1)])
+        shape = ones(Int, ndims(vt))
+        shape[dim_bond_b] = length(s)
+        vt = vt .* reshape(s, Tuple(shape))
     elseif absorb isa AbsorbEqually
         s_sqrt = sqrt.(s)
-        u = u .* reshape(s_sqrt, Int[ones(Int, ndims(u)-1); length(s)])
-        vt = vt .* reshape(s_sqrt, Int[length(s); ones(Int, ndims(vt) - 1)])
+
+        shape = ones(Int, ndims(u))
+        shape[dim_bond_a] = length(s)
+        u = u .* reshape(s_sqrt, Tuple(shape))
+
+        shape = ones(Int, ndims(vt))
+        shape[dim_bond_b] = length(s)
+        vt = vt .* reshape(s_sqrt, Tuple(shape))
     end
 
     return u, vt
