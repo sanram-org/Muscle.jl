@@ -293,7 +293,6 @@ end
     filter!(x -> x != dim_physical_a && x != dim_bond_a, perm)
     push!(perm, dim_physical_a)
     push!(perm, dim_bond_a)
-    @show perm
     perm = invperm(perm)
     u = permutedims(u, perm)
 
@@ -301,7 +300,6 @@ end
     filter!(x -> x != dim_physical_b && x != dim_bond_b, perm)
     push!(perm, dim_physical_b)
     pushfirst!(perm, dim_bond_b)
-    @show perm
     perm = invperm(perm)
     vt = permutedims(vt, perm)
 
