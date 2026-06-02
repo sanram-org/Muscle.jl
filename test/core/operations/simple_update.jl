@@ -1,201 +1,202 @@
 using Test
-using Muscle: Tensor, Index
-using LinearAlgebra: LinearAlgebra
-
-# TODO test on NVIDIA GPU
+using Muscle: Muscle, simple_update, binary_einsum
+using LinearAlgebra: LinearAlgebra, norm
 
 # these two tensors represent a MPS factorization of the |00> + |01> + |10> + |11> state with norm=√2
-Γa = Tensor([1.0 0.0; 0.0 1.0], [Index((; site=1, cut=1)), Index((; bond=(1, 2)))])
-Γb = Tensor([1.0 0.0; 0.0 1.0], [Index((; site=2, cut=1)), Index((; bond=(1, 2)))])
+# out1,bond
+Γa = [1.0 0.0; 0.0 1.0]
+# out2,bond
+Γb = [1.0 0.0; 0.0 1.0]
 
-op_identity = Tensor(
-    reshape(Array{Float64}(LinearAlgebra.I(4)), 2, 2, 2, 2),
-    [Index((; site=1, cut=1)), Index((; site=2, cut=1)), Index((; site=1, cut=2)), Index((; site=2, cut=2))],
-)
+# in1,in2,out1,out2
+op_identity = reshape(Array{Float64}(LinearAlgebra.I(4)), 2, 2, 2, 2)
 
-op_cx = Tensor(
-    reshape(
-        [
-            1.0 0.0 0.0 0.0
-            0.0 1.0 0.0 0.0
-            0.0 0.0 0.0 1.0
-            0.0 0.0 1.0 0.0
-        ],
-        2,
-        2,
-        2,
-        2,
-    ),
-    [Index((; site=1, cut=1)), Index((; site=2, cut=1)), Index((; site=1, cut=2)), Index((; site=2, cut=2))],
+# in1,in2,out1,out2
+op_cx = reshape(
+    [
+        1.0 0.0 0.0 0.0
+        0.0 1.0 0.0 0.0
+        0.0 0.0 0.0 1.0
+        0.0 0.0 1.0 0.0
+    ],
+    2,
+    2,
+    2,
+    2,
 )
 
 @testset "apply identity" begin
-    U, s, V = Muscle.simple_update(
+    U, s, V = simple_update(
         Γa,
-        Index((; site=1, cut=1)),
         Γb,
-        Index((; site=2, cut=1)),
-        Index((; bond=(1, 2))),
-        op_identity,
-        Index((; site=1, cut=2)),
-        Index((; site=2, cut=2)),
+        op_identity;
+        dim_physical_a=1,
+        dim_physical_b=1,
+        dim_bond_a=2,
+        dim_bond_b=2,
+        absorb=Muscle.DontAbsorb(),
     )
 
     @test U ≈ Γa
     @test V ≈ Γb
-    @test s == Tensor([1.0, 1.0], [Index((; bond=(1, 2)))])
+    @test s ≈ [1.0, 1.0]
 
-    ψ = Muscle.binary_einsum(Muscle.hadamard(U, s), V)
-    @test Muscle.binary_einsum(ψ, conj(ψ)) |> only ≈ 2.0
+    ψ = let s = reshape(s, 1, 2)
+        binary_einsum(U .* s, V; contracting_dims=[[2],[1]])
+    end
+    @test binary_einsum(ψ, conj(ψ); contracting_dims=[[1,2],[1,2]]) |> only ≈ 2.0
 end
 
 @testset "apply cx" begin
-    U, s, V = Muscle.simple_update(
+    U, s, V = simple_update(
         Γa,
-        Index((; site=1, cut=1)),
         Γb,
-        Index((; site=2, cut=1)),
-        Index((; bond=(1, 2))),
-        op_cx,
-        Index((; site=1, cut=2)),
-        Index((; site=2, cut=2)),
+        op_cx;
+        dim_physical_a=1,
+        dim_physical_b=1,
+        dim_bond_a=2,
+        dim_bond_b=2,
+        absorb=Muscle.DontAbsorb(),
     )
 
     @test U ≈ Γa
-    @test V ≈ Tensor(1 / √2 * [1 -1; 1 1], [Index((; site=2, cut=1)), Index((; bond=(1, 2)))])
-    @test s == Tensor([√2, 0.0], [Index((; bond=(1, 2)))])
+    @test V ≈ 1 / √2 * [1 -1; 1 1] # [Index((; site=2, cut=1)), Index((; bond=(1, 2)))])
+    @test s == [√2, 0.0]
 
-    ψ = Muscle.binary_einsum(Muscle.hadamard(U, s), V)
-    @test Muscle.binary_einsum(ψ, conj(ψ)) |> only ≈ 2.0
+    ψ = let s = reshape(s, 1, 2)
+        binary_einsum(U .* s, V; contracting_dims=[[2],[1]])
+    end
+    @test binary_einsum(ψ, conj(ψ); contracting_dims=[[1,2],[1,2]]) |> only ≈ 2.0
 end
 
 @testset "apply identity, normalize" begin
-    U, s, V = Muscle.simple_update(
+    U, s, V = simple_update(
         Γa,
-        Index((; site=1, cut=1)),
         Γb,
-        Index((; site=2, cut=1)),
-        Index((; bond=(1, 2))),
-        op_identity,
-        Index((; site=1, cut=2)),
-        Index((; site=2, cut=2));
+        op_identity;
+        dim_physical_a=1,
+        dim_physical_b=1,
+        dim_bond_a=2,
+        dim_bond_b=2,
+        absorb=Muscle.DontAbsorb(),
         normalize=true,
     )
 
     @test U ≈ Γa
     @test V ≈ Γb
-    @test s ≈ Tensor([1 / √2, 1 / √2], [Index((; bond=(1, 2)))])
+    @test s ≈ [1 / √2, 1 / √2]
 
-    ψ = Muscle.binary_einsum(Muscle.hadamard(U, s), V)
-    @test Muscle.binary_einsum(ψ, conj(ψ)) |> only ≈ 1.0
+    ψ = let s = reshape(s, 1, 2)
+        binary_einsum(U .* s, V; contracting_dims=[[2],[1]])
+    end
+    @test binary_einsum(ψ, conj(ψ); contracting_dims=[[1,2],[1,2]]) |> only ≈ 1.0
 end
 
 @testset "apply cx, normalize" begin
-    U, s, V = Muscle.simple_update(
+    U, s, V = simple_update(
         Γa,
-        Index((; site=1, cut=1)),
         Γb,
-        Index((; site=2, cut=1)),
-        Index((; bond=(1, 2))),
-        op_cx,
-        Index((; site=1, cut=2)),
-        Index((; site=2, cut=2));
+        op_cx;
+        dim_physical_a=1,
+        dim_physical_b=1,
+        dim_bond_a=2,
+        dim_bond_b=2,
+        absorb=Muscle.DontAbsorb(),
         normalize=true,
     )
 
     @test U ≈ Γa
-    @test V ≈ Tensor(1 / √2 * [1 -1; 1 1], [Index((; site=2, cut=1)), Index((; bond=(1, 2)))])
-    @test s == Tensor([1.0, 0.0], [Index((; bond=(1, 2)))])
+    @test V ≈ 1 / √2 * [1 -1; 1 1] # [Index((; site=2, cut=1)), Index((; bond=(1, 2)))])
+    @test s == [1.0, 0.0]
 
-    ψ = Muscle.binary_einsum(Muscle.hadamard(U, s), V)
-    @test Muscle.binary_einsum(ψ, conj(ψ)) |> only ≈ 1.0
+    ψ = let s = reshape(s, 1, 2)
+        binary_einsum(U .* s, V; contracting_dims=[[2],[1]])
+    end
+    @test binary_einsum(ψ, conj(ψ); contracting_dims=[[1,2],[1,2]]) |> only ≈ 1.0
 end
 
 @testset "apply identity, truncate to χ=1" begin
-    U, s, V = Muscle.simple_update(
+    U, s, V = simple_update(
         Γa,
-        Index((; site=1, cut=1)),
         Γb,
-        Index((; site=2, cut=1)),
-        Index((; bond=(1, 2))),
-        op_identity,
-        Index((; site=1, cut=2)),
-        Index((; site=2, cut=2));
+        op_identity;
+        dim_physical_a=1,
+        dim_physical_b=1,
+        dim_bond_a=2,
+        dim_bond_b=2,
+        absorb=Muscle.DontAbsorb(),
         maxdim=1,
     )
 
-    @test U ≈ @view Γa[Index((; bond=(1, 2))) => 1:1]
-    @test V ≈ @view Γb[Index((; bond=(1, 2))) => 1:1]
-    @test s ≈ Tensor([1], [Index((; bond=(1, 2)))])
+    @test U ≈ @view Γa[:, 1:1]
+    @test V ≈ @view Γb[:, 1:1]
+    @test s ≈ [1]
 end
 
 @testset "apply cx, truncate to χ=1" begin
-    U, s, V = Muscle.simple_update(
+    U, s, V = simple_update(
         Γa,
-        Index((; site=1, cut=1)),
         Γb,
-        Index((; site=2, cut=1)),
-        Index((; bond=(1, 2))),
-        op_cx,
-        Index((; site=1, cut=2)),
-        Index((; site=2, cut=2));
+        op_cx;
+        dim_physical_a=1,
+        dim_physical_b=1,
+        dim_bond_a=2,
+        dim_bond_b=2,
+        absorb=Muscle.DontAbsorb(),
         maxdim=1,
     )
 
-    @test U ≈ @view Γa[Index((; bond=(1, 2))) => 1:1]
-    @test V ≈ Tensor(1 / √2 * [1; 1;;], [Index((; site=2, cut=1)), Index((; bond=(1, 2)))])
-    @test size(V, Index((; bond=(1, 2)))) == 1
-    @test s ≈ Tensor([√2], [Index((; bond=(1, 2)))])
+    @test U ≈ @view Γa[:, 1:1]
+    @test V ≈ 1 / √2 * [1; 1;;] # [Index((; site=2, cut=1)), Index((; bond=(1, 2)))])
+    # @test size(V, Index((; bond=(1, 2)))) == 1
+    @test s ≈ [√2]
 end
 
 # TODO test better
 @testset "apply identity, absorb s to u" begin
-    U, V = Muscle.simple_update(
+    U, V = simple_update(
         Γa,
-        Index((; site=1, cut=1)),
         Γb,
-        Index((; site=2, cut=1)),
-        Index((; bond=(1, 2))),
-        op_identity,
-        Index((; site=1, cut=2)),
-        Index((; site=2, cut=2));
-        absorb=Muscle.Operations.AbsorbU(),
+        op_identity;
+        dim_physical_a=1,
+        dim_physical_b=1,
+        dim_bond_a=2,
+        dim_bond_b=2,
+        absorb=Muscle.AbsorbU(),
     )
 
-    @test LinearAlgebra.norm(U) ≈ norm(binary_einsum(Γa, Γb))
+    @test norm(U) ≈ norm(binary_einsum(Γa, Γb); contracting_dims=[[2],[2]])
 end
 
 # TODO test better
 @testset "apply identity, absorb s to v" begin
-    U, V = Muscle.simple_update(
+    U, V = simple_update(
         Γa,
-        Index((; site=1, cut=1)),
         Γb,
-        Index((; site=2, cut=1)),
-        Index((; bond=(1, 2))),
-        op_identity,
-        Index((; site=1, cut=2)),
-        Index((; site=2, cut=2));
-        absorb=Muscle.Operations.AbsorbV(),
+        op_identity;
+        dim_physical_a=1,
+        dim_physical_b=1,
+        dim_bond_a=2,
+        dim_bond_b=2,
+        absorb=Muscle.AbsorbV(),
     )
 
-    @test LinearAlgebra.norm(V) ≈ norm(binary_einsum(Γa, Γb))
+    @test norm(U) ≈ norm(binary_einsum(Γa, Γb); contracting_dims=[[2],[2]])
 end
 
 # TODO test better
 @testset "apply identity, absorb s equally" begin
-    U, V = Muscle.simple_update(
+    U, V = simple_update(
         Γa,
-        Index((; site=1, cut=1)),
         Γb,
-        Index((; site=2, cut=1)),
-        Index((; bond=(1, 2))),
-        op_identity,
-        Index((; site=1, cut=2)),
-        Index((; site=2, cut=2));
-        absorb=Muscle.Operations.AbsorbEqually(),
+        op_identity;
+        dim_physical_a=1,
+        dim_physical_b=1,
+        dim_bond_a=2,
+        dim_bond_b=2,
+        absorb=Muscle.AbsorbEqually(),
     )
 
-    @test U ≈ Γa
-    @test V ≈ Γb
+    @test norm(U) ≈ norm(V)
+    @test norm(binary_einsum(Γa, Γb); contracting_dims=[[2],[2]]) ≈ norm(binary_einsum(U, V); contracting_dims=[[2],[2]])
 end

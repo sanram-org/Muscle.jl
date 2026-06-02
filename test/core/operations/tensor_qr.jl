@@ -1,33 +1,24 @@
 using Test
-using Muscle
+using Muscle: Tensor, tensor_qr, binary_einsum, isisometry
+using Muscle.Testing
 
-# TODO numeric test with non-random data
-# TODO test on NVIDIA GPU
+a = construct_test_array(ComplexF64, 2, 4, 6, 8)
 
-A = Tensor(rand(ComplexF64, 2, 4, 6, 8), [Index(:i), Index(:j), Index(:k), Index(:l)])
-ind_virtual = Index(:x)
+# throw if dims are out of bounds
+@test_throws AssertionError tensor_qr(a; dims=[100])
+@test_throws AssertionError tensor_qr(a; dims=[-1])
 
-# throw if inds_q is not provided
-@test_throws ArgumentError Muscle.tensor_qr(A)
+# throw if no dims left
+@test_throws AssertionError tensor_qr(a, dims=[1,2,3,4])
+@test_throws AssertionError tensor_qr(a, dims=Int[])
 
-# throw if index is not present
-@test_throws ArgumentError Muscle.tensor_qr(A, inds_q=[Index(:z)])
-@test_throws ArgumentError Muscle.tensor_qr(A, inds_r=[Index(:z)])
+q, r = tensor_qr(a; dims=[[1,2],[3,4]])
+q2, r2 = tensor_qr(a; dims=[1,2])
+@test q ≈ q2
+@test r ≈ r2
 
-# throw if no inds left
-@test_throws ArgumentError Muscle.tensor_qr(A, inds_q=[Index(:i), Index(:j), Index(:k), Index(:l)])
-@test_throws ArgumentError Muscle.tensor_qr(A, inds_r=[Index(:i), Index(:j), Index(:k), Index(:l)])
+@test size(q) == (2, 4, 8)
+@test size(r) == (8, 6, 8)
 
-# throw if chosen virtual index already present
-@test_throws ArgumentError Muscle.tensor_qr(A, inds_q=[Index(:i)], ind_virtual=Index(:j))
-
-Q, R = Muscle.tensor_qr(A; inds_q=[Index(:i), Index(:j)], ind_virtual)
-
-@test inds(Q) == [Index(:i), Index(:j), Index(:x)]
-@test inds(R) == [Index(:x), Index(:k), Index(:l)]
-
-@test size(Q) == (2, 4, 8)
-@test size(R) == (8, 6, 8)
-
-@test isapprox(Muscle.binary_einsum(Q, R), A)
-@test isisometry(Q, ind_virtual)
+@test isapprox(binary_einsum(q, r; contracting_dims=[[3],[1]]), a)
+@test isisometry(Tensor(q), 3)

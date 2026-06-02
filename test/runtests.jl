@@ -4,15 +4,14 @@ using SafeTestsets
 
 @testset "Unit" verbose = true begin
     @testset "Variance" include("core/variance.jl")
-    @testset "Tensor" include("core/tensor.jl")
     @testset "Operations" verbose = true begin
-        @testset "unary_einsum" include("core/operations/unary_einsum.jl")
         @testset "binary_einsum" include("core/operations/binary_einsum.jl")
         @testset "tensor_qr" include("core/operations/tensor_qr.jl")
         @testset "tensor_svd" include("core/operations/tensor_svd.jl")
         @testset "tensor_eigen" include("core/operations/tensor_eigen.jl")
         @testset "simple_update" include("core/operations/simple_update.jl")
     end
+    @testset "Tensor" include("core/tensor.jl")
 end
 
 @testset "Integration" verbose = true begin

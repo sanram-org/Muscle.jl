@@ -1,42 +1,30 @@
 using Test
-using Muscle: Muscle, Tensor, Index
-using LinearAlgebra
+using Muscle: Tensor, tensor_eigen, binary_einsum, isisometry
+using Muscle.Testing
 
-A = rand(4, 4)
-L, U = eigen(A)
-A * U ≈ U * Diagonal(L)
+a = construct_test_array(ComplexF64, 3, 4, 6, 2)
 
-# TODO numeric test with non-random data
-# TODO test on NVIDIA GPU
+# throw if dims are out of bounds
+@test_throws AssertionError tensor_eigen(a; dims=[100])
+@test_throws AssertionError tensor_eigen(a; dims=[-1])
 
-Ainds = Index(:l1), Index(:l2), Index(:r1), Index(:r2)
-A = Tensor(rand(ComplexF64, 8, 4, 8, 4), Ainds)
-
-# throw if inds_u is not provided
-@test_throws ArgumentError Muscle.tensor_eigen(A)
-
-# throw if index is not present
-@test_throws ArgumentError Muscle.tensor_eigen(A; inds_u=[Index(:z)])
-@test_throws ArgumentError Muscle.tensor_eigen(A; inds_uinv=[Index(:z)])
-
-# throw if no inds left
-@test_throws ArgumentError Muscle.tensor_eigen(A; inds_u=[Index(:l1), Index(:l2), Index(:r1), Index(:r2)])
-@test_throws ArgumentError Muscle.tensor_eigen(A; inds_uinv=[Index(:l1), Index(:l2), Index(:r1), Index(:r2)])
+# throw if no dims left
+@test_throws AssertionError tensor_eigen(a, dims=[1,2,3,4])
+@test_throws AssertionError tensor_eigen(a, dims=Int[])
 
 # throw if non-square 
-@test_throws DimensionMismatch Muscle.tensor_eigen(A; inds_u=[Index(:l1), Index(:r1)], ind_lambda=Index(:x))
+@test_throws DimensionMismatch tensor_eigen(a; dims=[[1,3],[2,4]])
 
-#Now the actual thing
-lambdas, U = Muscle.tensor_eigen(A; inds_u=[Index(:l1), Index(:l2)], ind_lambda=Index(:lambda))
+λ, u = tensor_eigen(a; dims=[[1,2],[3,4]])
+λ2, u2 = tensor_eigen(a; dims=[1,2])
+@test λ ≈ λ2
+@test u ≈ u2
 
-@test Muscle.inds(U) == [Index(:l1), Index(:l2), Index(:lambda)]
-@test Muscle.inds(lambdas) == [Index(:lambda)]
+@test size(λ) == (12,)
+@test size(u) == (3,4,12)
 
-@test size(U) == (8, 4, 32)
-@test size(lambdas) == (32,)
+uinv = reshape(inv(reshape(u, 12, 12)), 12, 6, 2)
+λ = reshape(λ, 1, 1, 12)
+a_re = binary_einsum((u .* λ), uinv; contracting_dims=[[3], [1]])
 
-# Test AU ≈ UΛ  (right eigenvectors)
-Ut = replace(U, Index(:l1) => Index(:r1), Index(:l2) => Index(:r2))
-AU = Muscle.binary_einsum(A, Ut)
-UL = Muscle.hadamard(U, lambdas)
-@test isapprox(AU, UL)
+@test isapprox(a_re, a)
