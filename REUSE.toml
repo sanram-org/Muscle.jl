@@ -1,0 +1,20 @@
+version = 1
+
+[[annotations]]
+path = [
+    "src/**",
+    "ext/**",
+    "test/**",
+    "docs/**",
+    "Project.toml",
+    "README.md",
+    ".github/**",
+    ".JuliaFormatter.toml",
+    ".gitignore",
+    "NOTICE",
+]
+SPDX-FileCopyrightText = [
+    "2022 Barcelona Supercomputing Center (BSC-CNS)",
+    "2026 Sergio Sánchez Ramírez"
+]
+SPDX-License-Identifier = "Apache-2.0"
