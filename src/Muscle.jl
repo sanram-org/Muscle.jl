@@ -3,20 +3,14 @@ module Muscle
 using Compat
 
 include("Utils.jl")
-
-include("Index.jl")
-export Index, variance, Covariant, Contravariant
-@compat public Label, label, Variance, Invariant
-
-include("IndexList.jl")
-
-include("Tensor.jl")
-export Tensor, inds, isisometry
-
 include("Backend.jl")
 include("Operations.jl")
 include("BackendConfig.jl")
+include("Tensor.jl")
 include("Testing.jl")
+
+export variance, Covariant, Contravariant, Invariant
+export Tensor, isisometry
 
 # precompilation
 using PrecompileTools
