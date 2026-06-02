@@ -13,7 +13,6 @@ include("IndexList.jl")
 include("Tensor.jl")
 export Tensor, inds, isisometry
 
-include("Platform.jl")
 include("Backend.jl")
 include("Operations.jl")
 include("Testing.jl")
