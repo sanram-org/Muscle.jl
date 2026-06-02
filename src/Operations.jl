@@ -15,11 +15,11 @@ using Base: @nospecializeinfer
     @assert all(∈(1:ndims(a)), batching_dims[1])
     @assert all(∈(1:ndims(b)), batching_dims[2])
     
-    @assert allequal((ai, bi) -> size(a, ai) == size(b, bi), zip(contracting_dims[1], contracting_dims[2]))
-    @assert allequal((ai, bi) -> size(a, ai) == size(b, bi), zip(batching_dims[1], batching_dims[2]))
+    @assert allequal(((ai, bi),) -> size(a, ai) == size(b, bi), zip(contracting_dims[1], contracting_dims[2]))
+    @assert allequal(((ai, bi),) -> size(a, ai) == size(b, bi), zip(batching_dims[1], batching_dims[2]))
 end
 
-function binary_einsum(@nospecialize(a::AbstractArray), @nospecialize(b::AbstractArray); @nospecialize(contracting_dims), batching_dims=((),()))
+function binary_einsum(@nospecialize(a::AbstractArray), @nospecialize(b::AbstractArray); contracting_dims, batching_dims=((),()))
     check_binary_einsum(a, b, contracting_dims, batching_dims)
     _platform = promote_platform(platform(a), platform(b))
     backend = getbackend(binary_einsum, _platform)
@@ -85,23 +85,23 @@ end
     return c
 end
 
-@nospecializeinfer function check_factorization(@nospecialize(a::AbstractArray), @nospecialize(dims))
+@nospecializeinfer function check_factorization(@nospecialize(a::AbstractArray), dims)
     @assert dims isa Base.AbstractVecOrTuple{Base.AbstractVecOrTuple}
     @assert length(dims) == 2
-    @assert length(dims[1]) == length(dims[2])
 
     @assert all(∈(1:ndims(a)), dims[1])
     @assert all(∈(1:ndims(a)), dims[2])
 end
 
-@nospecializeinfer function tensor_qr(@nospecialize(a::AbstractArray); @nospecialize(dims), kwargs...)
+@nospecializeinfer function tensor_qr(@nospecialize(a::AbstractArray); dims, kwargs...)
+    dims = factordims(a, dims)
     check_factorization(a, dims)
     backend = getbackend(tensor_qr, platform(a))
     return tensor_qr(backend, a; dims, kwargs...)
 end
 
-@nospecializeinfer function tensor_qr(::BackendBase, @nospecialize(a::AbstractArray); @nospecialize(dims), @nospecialize(kwargs...))
-    inds_q, inds_r = dims
+@nospecializeinfer function tensor_qr(::BackendBase, @nospecialize(a::AbstractArray); dims, kwargs...)
+    inds_q, inds_r = factordims(a, dims)
 
     # permute array
     left_sizes = Int[size(a, i) for i in inds_q]
@@ -114,19 +114,20 @@ end
     q, r = Matrix(F.Q), Matrix(F.R)
 
     # tensorify results
-    q = reshape(Q, left_sizes..., size(Q, 2))
-    r = reshape(R, size(R, 1), right_sizes...)
+    q = reshape(q, left_sizes..., size(q, 2))
+    r = reshape(r, size(r, 1), right_sizes...)
 
     return q, r
 end
 
-@nospecializeinfer function tensor_svd(@nospecialize(a::AbstractArray); @nospecialize(dims), kwargs...)
+@nospecializeinfer function tensor_svd(@nospecialize(a::AbstractArray); dims, kwargs...)
+    dims = factordims(a, dims)
     check_factorization(a, dims)
     backend = getbackend(tensor_svd, platform(a))
     return tensor_svd(backend, a; dims, kwargs...)
 end
 
-@nospecializeinfer function tensor_svd(::BackendBase, @nospecialize(a::AbstractArray); @nospecialize(dims), @nospecialize(kwargs...))
+@nospecializeinfer function tensor_svd(::BackendBase, @nospecialize(a::AbstractArray); dims, kwargs...)
     inds_u, inds_v = dims
 
     # permute array
@@ -146,13 +147,15 @@ end
     return U, s, Vt
 end
 
-@nospecializeinfer function tensor_eigen(@nospecialize(a::AbstractArray); @nospecialize(dims), kwargs...)
+@nospecializeinfer function tensor_eigen(@nospecialize(a::AbstractArray); dims, kwargs...)
+    dims = factordims(a, dims)
+    @assert prod(i -> size(a, i), dims[1]) == prod(i -> size(a, i), dims[2]) "Eigendecomposition requires a square matrix"
     check_factorization(a, dims)
     backend = getbackend(tensor_eigen, platform(a))
     return tensor_eigen(backend, a; dims, kwargs...)
 end
 
-@nospecializeinfer function tensor_eigen(::BackendBase, @nospecialize(a::AbstractArray); @nospecialize(dims), @nospecialize(kwargs...))
+@nospecializeinfer function tensor_eigen(::BackendBase, @nospecialize(a::AbstractArray); dims, kwargs...)
     inds_l, inds_r = dims
 
     # permute array
@@ -162,14 +165,13 @@ end
     a_mat = reshape(parent(a_mat), prod(left_sizes), prod(right_sizes))
 
     # compute eigen
-    F = LinearAlgebra.eigen(Amat; kwargs...)
+    F = LinearAlgebra.eigen(a_mat; kwargs...)
 
     # tensorify results
-    Λ = F.values
-    #U = reshape(F.vectors, size(F.vectors, 2), right_sizes...)
-    U = reshape(F.vectors, left_sizes..., size(F.vectors, 2))
+    λ = F.values
+    u = reshape(F.vectors, left_sizes..., size(F.vectors, 2))
 
-    return Λ, U
+    return λ, u
 end
 
 # absorb behavior trait
@@ -191,6 +193,14 @@ struct AbsorbEqually <: AbsorbBehavior end
     absorb=DontAbsorb,
     kwargs...
 )
+    @assert ndims(a) >= 2
+    @assert ndims(b) >= 2
+    @assert ndims(g) == 4
+    @assert dim_physical_a != dim_bond_a
+    @assert dim_physical_b != dim_bond_b
+    @assert size(a, dim_physical_a) == size(g, 1) == size(g, 3)
+    @assert size(a, dim_physical_b) == size(g, 2) == size(g, 4)
+    @assert size(a, dim_bond_a) == size(b, dim_bond_b)
     _platform = promote_platform(platform(a), platform(b), platform(g))
     backend = getbackend(simple_update, _platform)
     return simple_update(backend, a, b, g; dim_physical_a, dim_physical_b, dim_bond_a, dim_bond_b, absorb, kwargs...)
@@ -207,30 +217,34 @@ end
     dim_bond_b,
     absorb=DontAbsorb,
     normalize=false,
-    atol=0.0,
-    rtol=0.0,
     maxdim=nothing,
 )
     @debug "Fallback to generic `simple_update` implementation for backend $B"
 
     # contract state tensors
-    Θ = binary_einsum(B, a, b; contracting_dims=((dim_bond_a,), (dim_bond_b,)))
+    Θ = binary_einsum(a, b; contracting_dims=((dim_bond_a,), (dim_bond_b,)))
 
     # contract state tensor with gate
+    dim_physical_a_on_Θ = dim_physical_a
     if dim_physical_a > dim_bond_a
-        dim_physical_a -= 1
+        dim_physical_a_on_Θ -= 1
     end
+    dim_physical_b_on_Θ = dim_physical_b
     if dim_physical_b > dim_bond_b
-        dim_physical_b -= 1
+        dim_physical_b_on_Θ -= 1
     end
-    dim_physical_b += ndims(a) - 1
-    Θ = binary_einsum(B, Θ, g; contracting_dims=((dim_physical_a, dim_physical_b), (dims_g_a[1], dims_g_b[2])))
+    dim_physical_b_on_Θ += ndims(a) - 1
+    dims_g_a_in = 1
+    dims_g_b_in = 2
+    Θ = binary_einsum(Θ, g; contracting_dims=((dim_physical_a_on_Θ, dim_physical_b_on_Θ), (dims_g_a_in, dims_g_b_in)))
 
     # factorize
     dims_outer_a = sizehint!(Int[], ndims(a) - 2)
     dims_outer_b = sizehint!(Int[], ndims(b) - 2)
 
     for i in 1:ndims(a)
+        i == dim_physical_a && continue
+        i == dim_bond_a && continue
         j = i
         if i > dim_physical_a
             j -= 1
@@ -241,7 +255,10 @@ end
         push!(dims_outer_a, j)
     end
 
+    # Main.@infiltrate
     for i in 1:ndims(b)
+        i == dim_physical_b && continue
+        i == dim_bond_b && continue
         j = i + ndims(a) - 2
         if i > dim_physical_b
             j -= 1
@@ -260,7 +277,7 @@ end
     
     # TODO other factorizations?
     dims = (dims_outer_a, dims_outer_b)
-    u, s, vt = tensor_svd(B, Θ; dims, atol, rtol)
+    u, s, vt = tensor_svd(Θ; dims)
 
     # ad-hoc truncation
     if !isnothing(maxdim)
@@ -269,7 +286,7 @@ end
         vt = selectdim(v, 1, 1:min(maxdim, length(s)))
     end
 
-    normalize && LinearAlgebra.normalize!(S)
+    normalize && LinearAlgebra.normalize!(s)
 
     if absorb isa DontAbsorb
         return u, s, vt
