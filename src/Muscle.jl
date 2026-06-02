@@ -19,13 +19,15 @@ using PrecompileTools
     @compile_workload begin
         # `binary_einsum` instances
         for (Ta, Tb) in [(Float64, Float64), (ComplexF64, ComplexF64), (Float64, ComplexF64), (ComplexF64, Float64)]
-            a = Tensor(ones(Ta, 2, 2), [:i, :j])
-            b = Tensor(ones(Tb, 2, 2), [:j, :k])
-            Muscle.binary_einsum(a, b)
+            # ij,jk->ik
+            a = Tensor(ones(Ta, 2, 2))
+            b = Tensor(ones(Tb, 2, 2))
+            einsum(a, b; dims=((2,),(1,)))
 
-            a = Tensor(ones(Ta, 2, 2, 2), [:i, :j, :k])
-            b = Tensor(ones(Tb, 2, 2, 2), [:j, :k, :l])
-            Muscle.binary_einsum(a, b)
+            # ijk,jkl->il
+            a = Tensor(ones(Ta, 2, 2, 2))
+            b = Tensor(ones(Tb, 2, 2, 2))
+            einsum(a, b; dims=((2,3), (1,2)))
         end
     end
 end
