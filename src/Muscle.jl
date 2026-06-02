@@ -15,6 +15,7 @@ export Tensor, inds, isisometry
 
 include("Backend.jl")
 include("Operations.jl")
+include("BackendConfig.jl")
 include("Testing.jl")
 
 # precompilation
