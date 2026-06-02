@@ -47,7 +47,7 @@ struct Tensor{T,N,A<:AbstractArray{T,N}} <: AbstractArray{T,N}
         Tensor(data::A, vars) where {T,N,A<:AbstractArray{T,N}}
     """
     function Tensor(data::A, vars) where {T,N,A<:AbstractArray{T,N}}
-        return Tensor(data, collect(vars))
+        return Tensor(data, collect(Variance, vars))
     end
 end
 
@@ -153,6 +153,27 @@ Base.IndexStyle(::Type{Tensor{T,N,A}}) where {T,N,A} = IndexStyle(A)
 @propagate_inbounds Base.getindex(t::Tensor, i...) = getindex(parent(t), i...)
 @propagate_inbounds Base.setindex!(t::Tensor, v, i...) = setindex!(parent(t), v, i...)
 
+# `tensor[d => r]` case
+function _getindex_canonical_keys(t::Tensor, kv)
+    _index = Vector{Any}(undef, ndims(t))
+    for d in 1:ndims(t)
+        i = findfirst(x -> x.first == d, kv)
+        _index[d] = !isnothing(i) ? kv[i].second : Colon()
+    end
+    return _index
+end
+
+@propagate_inbounds function Base.getindex(t::Tensor, i::Pair...)
+    extent = _getindex_canonical_keys(t, i)
+    return getindex(parent(t), extent...)
+end
+
+@propagate_inbounds function Base.setindex!(t::Tensor, v, i::Pair...)
+    extent = _getindex_canonical_keys(t, i)
+    setindex!(parent(t), v, extent...)
+    return t
+end
+
 Base.firstindex(t::Tensor) = firstindex(parent(t))
 Base.lastindex(t::Tensor) = lastindex(parent(t))
 
@@ -242,7 +263,19 @@ Return a view of the tensor with the given indices. If a `Pair` is given, the in
 
     This method doesn't return a `SubArray`, but a `Tensor` wrapping a `SubArray`.
 """
-Base.view(t::Tensor, i...) = Tensor(view(parent(t), i...), i...)
+function Base.view(t::Tensor, i::Base.AbstractVecOrTuple{Any})
+    vars = collect(variance(t))
+    for d in ndims(t):-1:1
+        if i[d] isa Integer
+            deleteat!(vars, d)
+        end
+    end
+    return Tensor(view(parent(t), i...), vars)
+end
+
+Base.view(t::Tensor, ::Colon) = Tensor(view(parent(t), Colon()), [Invariant])
+Base.view(t::Tensor, i...) = view(t, i)
+Base.view(t::Tensor, kv::Pair...) = view(t, _getindex_canonical_keys(t, kv))
 
 # NOTE: `conj` is automatically managed because `Tensor` inherits from `AbstractArray`,
 # but there is a bug when calling `conj` on `Tensor{T,0}` which makes it return a `Tensor{Tensor{Complex, 0}, 0}`
@@ -262,7 +295,7 @@ Return the adjoint of the tensor; i.e. the
 
     This method doesn't transpose the array.
 """
-Base.adjoint(t::Tensor) = Tensor(conj(t), adjoint.(variance(t)))
+Base.adjoint(t::Tensor) = Tensor(conj(parent(t)), adjoint.(variance(t)))
 
 # NOTE: Maybe use transpose for lazy transposition ?
 Base.transpose(t::Tensor{T,1,A}) where {T,A<:AbstractArray{T,1}} = copy(t)
@@ -274,7 +307,7 @@ Base.transpose(t::Tensor{T,2,A}) where {T,A<:AbstractArray{T,2}} = Tensor(transp
 Expand the tensor by adding a new dimension with the given `size` at the specified `axis`.
 Currently the supported methods are `:zeros` and `:repeat`.
 """
-function extend(tensor::Tensor, axis=1, size=1, method=:zeros, variance=Invariant)
+function extend(tensor::Tensor; axis=1, size=1, method=:zeros, variance=Invariant)
     array = parent(tensor)
     data = if size == 1
         reshape(array, Base.size(array)[1:(axis - 1)]..., 1, Base.size(array)[axis:end]...)
@@ -375,7 +408,7 @@ function fuse(tensor::Tensor, dims)
 end
 
 function Base._mapreduce_dim(f, op, init, tensor::Tensor, dims)
-    Base._mapreduce_dim(f, op, init, parent(tensor), dim.((tensor,), dims))
+    Base._mapreduce_dim(f, op, init, parent(tensor), dims)
 end
 
 # fix for ambiguity
@@ -383,7 +416,8 @@ end
 #     Base._mapreduce_dim(f, op, init, parent(t), c)
 # end
 
-Base._sum(x::Tensor, dims; kwargs...) = Tensor(Base._sum(parent(x), dim.((x,), dims); kwargs...), variance(x))
+Base._sum(x::Tensor, dims; kwargs...) = Tensor(Base._sum(parent(x), dims; kwargs...), variance(x))
+Base._sum(x::Tensor, ::Colon; kwargs...) = Tensor(sum(parent(x); kwargs...))
 
 # TODO isometry with respect to several output dims
 isisometry(a::Tensor, dim::Integer; kwargs...) = isisometry(a, (dim,); kwargs...)
@@ -406,8 +440,7 @@ function check_compatible_variance(a, b)
     a == Invariant || b == Invariant
 end
 
-factordims(a) = factordims(a, nothing)
-factordims(a::Tensor, dims) = factordims(variance(a), dims)
+factordims(a::Tensor) = factordims(variance(a), nothing)
 
 function factordims(vars, ::Nothing)
     left, right = Int[], Int[]
@@ -423,13 +456,14 @@ function factordims(vars, ::Nothing)
     return left, right
 end
 
-function factordims(vars, dims::Base.AbstractVecOrTuple{Int})
-    right = Int[i for i in 1:length(vars) if i ∉ dims]
-    return vars, right
+function factordims(a::AbstractArray, left::Base.AbstractVecOrTuple{Int})
+    @assert all(∈(1:ndims(a)), left)
+    right = Int[i for i in 1:ndims(a) if i ∉ left]
+    return left, right
 end
 
-function factordims(vars, dims::Base.AbstractVecOrTuple{Base.AbstractVecOrTuple})
-    n = length(vars)
+function factordims(a::AbstractArray, dims::Base.AbstractVecOrTuple{Base.AbstractVecOrTuple})
+    n = ndims(a)
     @assert all(∈(1:n), dims[1])
     @assert all(∈(1:n), dims[2])
     for i in 1:n
@@ -437,6 +471,7 @@ function factordims(vars, dims::Base.AbstractVecOrTuple{Base.AbstractVecOrTuple}
     end
     return dims
 end
+
 
 """
     einsum(a::Tensor, b::Tensor; dims::NTuple{2,Tuple})
@@ -458,8 +493,8 @@ function einsum(a::Tensor, b::Tensor; dims)
         end
     end
     c = binary_einsum(parent(a), parent(b); contracting_dims=dims)
-    vars_a = Variance[variance(a, i) for i in dims[1]]
-    vars_b = Variance[variance(b, i) for i in dims[2]]
+    vars_a = Variance[variance(a, i) for i in 1:ndims(a) if i ∉ dims[1]]
+    vars_b = Variance[variance(b, i) for i in 1:ndims(b) if i ∉ dims[2]]
     return Tensor(c, Variance[vars_a; vars_b])
 end
 
@@ -478,6 +513,7 @@ function einsum!(c::Tensor, a::Tensor, b::Tensor; dims)
         end
     end
     binary_einsum!(parent(c), parent(a), parent(b); contracting_dims=dims)
+    # TODO fix variance of c
     return c
 end
 
