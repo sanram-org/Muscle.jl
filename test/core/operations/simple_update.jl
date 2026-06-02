@@ -165,7 +165,7 @@ end
         absorb=Muscle.AbsorbU(),
     )
 
-    @test norm(U) ≈ norm(binary_einsum(Γa, Γb); contracting_dims=[[2],[2]])
+    @test norm(U) ≈ norm(binary_einsum(Γa, Γb; contracting_dims=[[2],[2]]))
 end
 
 # TODO test better
@@ -181,7 +181,7 @@ end
         absorb=Muscle.AbsorbV(),
     )
 
-    @test norm(U) ≈ norm(binary_einsum(Γa, Γb); contracting_dims=[[2],[2]])
+    @test norm(U) ≈ norm(binary_einsum(Γa, Γb; contracting_dims=[[2],[2]]))
 end
 
 # TODO test better
@@ -198,5 +198,5 @@ end
     )
 
     @test norm(U) ≈ norm(V)
-    @test norm(binary_einsum(Γa, Γb); contracting_dims=[[2],[2]]) ≈ norm(binary_einsum(U, V); contracting_dims=[[2],[2]])
+    @test norm(binary_einsum(Γa, Γb; contracting_dims=[[2],[2]])) ≈ norm(binary_einsum(U, V; contracting_dims=[[2],[2]]))
 end
