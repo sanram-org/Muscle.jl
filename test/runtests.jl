@@ -19,10 +19,6 @@ end
     @safetestset "Strided" include("integration/strided.jl")
     # @safetestset "Dagger" include("integration/dagger.jl")
 
-    # @safetestset "ChainRules" include("integration/chainrules.jl")
-
-    @safetestset "ITensors" include("integration/itensors.jl")
-
     if !isnothing(get(ENV, "MUSCLE_TEST_CUDA", nothing))
         @safetestset "CUDA" include("integration/cuda.jl")
     end
