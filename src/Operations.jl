@@ -33,7 +33,7 @@ end
 @nospecializeinfer function binary_einsum(
     ::BackendBase, @nospecialize(a::AbstractArray), @nospecialize(b::AbstractArray); contracting_dims, batching_dims
 )
-    @assert isempty(batching_dims[1]) "Batch `binary_einsum` not yet supported in BackendBase"
+    @assert all(isempty, batching_dims) "Batch `binary_einsum` not yet supported in BackendBase"
 
     inner_inds_a, inner_inds_b = collect.(contracting_dims)
     outer_inds_a = Int[i for i in 1:ndims(a) if i ∉ inner_inds_a]
@@ -93,7 +93,7 @@ end
     contracting_dims,
     batching_dims,
 )
-    @assert isempty(batching_dims[1]) "Batch `binary_einsum` not yet supported in BackendBase"
+    @assert all(isempty, batching_dims) "Batch `binary_einsum` not yet supported in BackendBase"
 
     inner_inds_a, inner_inds_b = collect.(contracting_dims)
     outer_inds_a = Int[i for i in 1:ndims(a) if i ∉ inner_inds_a]
