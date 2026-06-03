@@ -7,48 +7,66 @@ using Base: @nospecializeinfer
 
 function __init__()
     Muscle.register_backend!(BackendOMEinsum())
-    # Muscle.Operations.register_backend_for_op!(Muscle.Operations.unary_einsum, BackendOMEinsum())
-    # Muscle.Operations.register_backend_for_op!(Muscle.Operations.unary_einsum!, BackendOMEinsum())
     Muscle.Operations.register_backend_for_op!(Muscle.Operations.binary_einsum, BackendOMEinsum())
     Muscle.Operations.register_backend_for_op!(Muscle.Operations.binary_einsum!, BackendOMEinsum())
 end
 
-# function Muscle.unary_einsum(::BackendOMEinsum, inds_y, x::Tensor)
-#     y = Tensor(similar(parent(x), Tuple(size(x, ind) for ind in inds_y)), inds_y)
-#     unary_einsum!(BackendOMEinsum(), y, x)
-#     return y
-# end
-
-# function Muscle.unary_einsum!(::BackendOMEinsum, y::Tensor, x::Tensor)
-#     @assert inds(y) ⊆ inds(x) "Output indices must be a subset of input indices"
-
-#     size_dict = Dict(inds(x) .=> size(x))
-#     OMEinsum.einsum!((inds(x),), inds(y), (parent(x),), parent(y), true, false, size_dict)
-
-#     return y
-# end
-
 @nospecializeinfer function Muscle.binary_einsum(::Muscle.BackendOMEinsum, @nospecialize(a::AbstractArray), @nospecialize(b::AbstractArray); contracting_dims, batching_dims)
-    # size_dict = Dict{Index,Int}()
-    # for (ind, ind_size) in Iterators.flatten([inds(a) .=> size(a), inds(b) .=> size(b)])
-    #     size_dict[ind] = ind_size
-    # end
-    
-    # c = OMEinsum.get_output_array((a, b), Int[size_dict[i] for i in inds_c], false)
-    # OMEinsum.einsum!((inds(a), inds(b)), inds_c, (a, b), c, true, false, size_dict)
-    # return c
-    throw(ErrorException("code has not been updated yet"))
+    inner_dims_a, inner_dims_b = contracting_dims
+    batch_dims_a, batch_dims_b = batching_dims
+    outer_dims_a = filter(d -> d ∉ inner_dims_a && d ∉ batch_dims_a, 1:ndims(a))
+    outer_dims_b = filter(d -> d ∉ inner_dims_b && d ∉ batch_dims_b, 1:ndims(b))
+
+    csize = Int[
+        Int[size(a, d) for d in batch_dims_a];
+        Int[size(a, d) for d in outer_dims_a];
+        Int[size(b, d) for d in outer_dims_b]
+    ]
+
+    c = OMEinsum.get_output_array((a, b), csize, false)
+    Muscle.binary_einsum!(Muscle.BackendOMEinsum(), c, a, b; contracting_dims, batching_dims)
+    return c
 end
 
 @nospecializeinfer function Muscle.binary_einsum!(::Muscle.BackendOMEinsum, @nospecialize(c::AbstractArray), @nospecialize(a::AbstractArray), @nospecialize(b::AbstractArray); contracting_dims, batching_dims)
-    # size_dict = Dict{Index,Int}()
-    # for (ind, ind_size) in Iterators.flatten([inds(a) .=> size(a), inds(b) .=> size(b)])
-    #     size_dict[ind] = ind_size
-    # end
+    inner_dims_a, inner_dims_b = contracting_dims
+    batch_dims_a, batch_dims_b = batching_dims
+    outer_dims_a = filter(d -> d ∉ inner_dims_a && d ∉ batch_dims_a, 1:ndims(a))
+    outer_dims_b = filter(d -> d ∉ inner_dims_b && d ∉ batch_dims_b, 1:ndims(b))
 
-    # OMEinsum.einsum!((inds(a), inds(b)), inds(c), (parent(a), parent(b)), parent(c), true, false, size_dict)
-    # return c
-    throw(ErrorException("code has not been updated yet"))
+    n_inner = length(inner_dims_a)
+    n_batch = length(batch_dims_a)
+    inner_inds = collect(1:n_inner)
+    batch_inds = collect(n_inner .+ (1:n_batch))
+    outer_inds_a = collect(n_inner + n_batch .+ (1:length(outer_dims_a)))
+    outer_inds_b = collect(n_inner + n_batch .+ (1:length(outer_dims_b)))
+
+    inds_a = map(1:ndims(a)) do d
+        i = findfirst(==(d), inner_dims_a)
+        !isnothing(i) && return inner_inds[i]
+        
+        i = findfirst(==(d), batch_dims_a)
+        !isnothing(i) && return batch_inds[i]
+
+        i = findfirst(==(d), inner_dims_a)
+        !isnothing(i) && return outer_inds_a[i]
+    end::Vector{Int}
+
+    inds_b = map(1:ndims(b)) do d
+        i = findfirst(==(d), inner_dims_b)
+        !isnothing(i) && return inner_inds[i]
+        
+        i = findfirst(==(d), batch_dims_b)
+        !isnothing(i) && return batch_inds[i]
+
+        i = findfirst(==(d), inner_dims_b)
+        !isnothing(i) && return outer_inds_b[i]
+    end::Vector{Int}
+
+    inds_c = Int[batch_inds; outer_inds_a; outer_inds_b]
+    
+    OMEinsum.einsum!((inds_a, inds_b), inds_c, (a, b), c, true, false)
+    return c
 end
 
 end
