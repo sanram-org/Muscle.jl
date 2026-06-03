@@ -2,7 +2,7 @@ using Muscle
 using Test
 using SafeTestsets
 
-target_tests = isempty(ARGS) ? ["core", "integration"] : ARGS
+target_testsets = isempty(ARGS) ? ["core", "integration"] : ARGS
 
 if "core" in target_testsets
     @testset "Unit" verbose = true begin
