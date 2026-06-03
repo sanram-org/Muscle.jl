@@ -170,13 +170,13 @@ Currently, Muscle supports the following `Platform`s:
 - CUDA
 - Dagger
 
-For example, a user may want to use CuTensorNet.jl for `simple_update` and OMEinsum.jl for `unary_einsum` under the CUDA `Platform`. This is easily configured as,
+For example, a user may want to use CuTensorNet.jl for `simple_update` and OMEinsum.jl for `binary_einsum` under the CUDA `Platform`. This is easily configured as,
 
 ```julia
 using Muscle
-using Muscle.Operations: setbackend!, simple_update, unary_einsum
+using Muscle.Operations: setbackend!, simple_update, binary_einsum
 Muscle.Operations.setbackend!(simple_update, Muscle.PlatformCUDA(), Muscle.BackendCuTensorNet())
-Muscle.Operations.setbackend!(unary_einsum, Muscle.PlatformCUDA(), Muscle.BackendOMEinsum())
+Muscle.Operations.setbackend!(binary_einsum, Muscle.PlatformCUDA(), Muscle.BackendOMEinsum())
 ```
 
 The currently support table of backends and operations is,
@@ -184,7 +184,6 @@ The currently support table of backends and operations is,
 <!-- | **Platform**      | Host | Reactant    | CUDA             | CUDA        | CUDA           | Dagger    | Host / CUDA | -->
 |               | Base (stdlibs) | Reactant.jl | CUDA.jl (cuBLAS) | CuTENSOR.jl | CuTensorNet.jl | Dagger.jl | OMEinsum.jl | Strided.jl |
 | ------------- | -------------- | ----------- | ---------------- | ----------- | -------------- | --------- | ----------- | ---------- |
-| unary_einsum  |                |             |                  |             |                |           | ✅           |            |
 | binary_einsum | ✅              | ✅           | ✅                | ✅           | ✅              | ✅         | ✅           | ✅          |
 | tensor_qr     | ✅              | ⌛           | ⌛                | -           | ✅              |           | -           | -          |
 | tensor_svd    | ✅              | ✅           | ⌛                | -           | ✅              |           | -           | -          |

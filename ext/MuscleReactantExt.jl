@@ -13,8 +13,6 @@ function __init__()
     Muscle.register_backend!(BackendReactant())
 
     for op in [
-        # Muscle.unary_einsum,
-        # Muscle.unary_einsum!,
         Muscle.binary_einsum,
         Muscle.binary_einsum!,
         Muscle.tensor_svd,
