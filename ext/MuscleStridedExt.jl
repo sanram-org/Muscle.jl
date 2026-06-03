@@ -1,7 +1,7 @@
 module MuscleStridedExt
 
 using Muscle
-using Muscle: BackendStrided, arraytype
+using Muscle: BackendStrided
 using Strided
 using StridedViews
 using Base: @nospecializeinfer
@@ -17,8 +17,8 @@ end
 )
     return binary_einsum(
         BackendStrided(),
-        arraytype(a) isa StridedView ? a : StridedView(a),
-        arraytype(b) isa StridedView ? b : StridedView(b);
+        a isa StridedView ? a : StridedView(a),
+        b isa StridedView ? b : StridedView(b);
         contracting_dims,
         batching_dims,
     )
