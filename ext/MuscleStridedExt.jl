@@ -27,7 +27,7 @@ end
 @nospecializeinfer function Muscle.binary_einsum(
     ::BackendStrided, @nospecialize(a::StridedView), @nospecialize(b::StridedView); contracting_dims, batching_dims
 )
-    @assert all(isempty,batching_dims) "Batch `binary_einsum` not yet supported for BackendStrided"
+    @assert all(isempty, batching_dims) "Batch `binary_einsum` not yet supported for BackendStrided"
 
     inner_dims_a, inner_dims_b = contracting_dims
     outer_dims_a = Int[i for i in 1:ndims(a) if i ∉ inner_dims_a]
@@ -43,7 +43,12 @@ end
 end
 
 @nospecializeinfer function Muscle.binary_einsum!(
-    ::BackendStrided, @nospecialize(c::AbstractArray), @nospecialize(a::AbstractArray), @nospecialize(b::AbstractArray); contracting_dims, batching_dims
+    ::BackendStrided,
+    @nospecialize(c::AbstractArray),
+    @nospecialize(a::AbstractArray),
+    @nospecialize(b::AbstractArray);
+    contracting_dims,
+    batching_dims,
 )
     return Muscle.binary_einsum!(
         BackendStrided(),
@@ -56,7 +61,12 @@ end
 end
 
 @nospecializeinfer function Muscle.binary_einsum!(
-    ::BackendStrided, @nospecialize(c::StridedView), @nospecialize(a::StridedView), @nospecialize(b::StridedView); contracting_dims, batching_dims
+    ::BackendStrided,
+    @nospecialize(c::StridedView),
+    @nospecialize(a::StridedView),
+    @nospecialize(b::StridedView);
+    contracting_dims,
+    batching_dims,
 )
     @assert all(isempty, batching_dims) "Batch `binary_einsum` not yet supported for BackendStrided"
 

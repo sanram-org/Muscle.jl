@@ -17,11 +17,7 @@ end
 
 ## `CUDA` (uses cuTENSOR)
 @nospecializeinfer function Muscle.binary_einsum(
-    ::BackendCuTENSOR,
-    @nospecialize(a::AbstractArray),
-    @nospecialize(b::AbstractArray);
-    contracting_dims,
-    batching_dims,
+    ::BackendCuTENSOR, @nospecialize(a::AbstractArray), @nospecialize(b::AbstractArray); contracting_dims, batching_dims
 )
     inner_dims_a, inner_dims_b = contracting_dims
     batch_dims_a, batch_dims_b = batching_dims

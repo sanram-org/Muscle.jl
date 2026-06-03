@@ -4,7 +4,11 @@ using LinearAlgebra
 using Base: @nospecializeinfer
 
 @nospecializeinfer function Muscle.binary_einsum(
-    ::Muscle.BackendDagger, @nospecialize(a::AbstractArray), @nospecialize(b::AbstractArray); contracting_dims, batching_dims
+    ::Muscle.BackendDagger,
+    @nospecialize(a::AbstractArray),
+    @nospecialize(b::AbstractArray);
+    contracting_dims,
+    batching_dims,
 )
     contracting_dims = (collect(Int, contracting_dims[1]), collect(Int, contracting_dims[2]))
     batching_dims = (collect(Int, batching_dims[1]), collect(Int, batching_dims[2]))
@@ -48,11 +52,13 @@ function Dagger.Blocks(@nospecialize(x::BinaryEinsum))
     batch_dims_a, batch_dims_b = x.batching_dims
 
     return Dagger.Blocks(
-        Tuple(vcat(
-            Int[x.a.partitioning.blocksize[i] for i in batch_dims_a],
-            Int[x.a.partitioning.blocksize[i] for i in 1:ndims(x.a) if i ∉ inner_dims_a && i ∉ batch_dims_a],
-            Int[x.b.partitioning.blocksize[i] for i in 1:ndims(x.b) if i ∉ inner_dims_b && i ∉ batch_dims_b],
-        )),
+        Tuple(
+            vcat(
+                Int[x.a.partitioning.blocksize[i] for i in batch_dims_a],
+                Int[x.a.partitioning.blocksize[i] for i in 1:ndims(x.a) if i ∉ inner_dims_a && i ∉ batch_dims_a],
+                Int[x.b.partitioning.blocksize[i] for i in 1:ndims(x.b) if i ∉ inner_dims_b && i ∉ batch_dims_b],
+            ),
+        ),
     )
 end
 
