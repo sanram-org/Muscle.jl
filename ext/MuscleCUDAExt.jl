@@ -33,12 +33,6 @@ end
 end
 
 @nospecializeinfer function Muscle.binary_einsum!(::BackendCuTENSOR, @nospecialize(c::AbstractArray), @nospecialize(a::AbstractArray), @nospecialize(b::AbstractArray); contracting_dims, batching_dims)
-    # translate indices to mode numbers
-    indmap = Dict{Index,Int}(ind => i for (i, ind) in enumerate(unique(inds_a ∪ inds_b)))
-    inds_a = [indmap[ind] for ind in inds_a]
-    inds_b = [indmap[ind] for ind in inds_b]
-    inds_c = [indmap[ind] for ind in inds_c]
-
     inner_dims_a, inner_dims_b = contracting_dims
     batch_dims_a, batch_dims_b = batching_dims
     outer_dims_a = Int[i for i in 1:ndims(a) if i ∉ inner_dims_a && i ∉ batch_dims_a]

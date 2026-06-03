@@ -60,7 +60,7 @@ end
     )
 
     @test U ≈ Γa
-    @test V ≈ 1 / √2 * [1 -1; 1 1] # [Index((; site=2, cut=1)), Index((; bond=(1, 2)))])
+    @test V ≈ 1 / √2 * [1 -1; 1 1]
     @test s == [√2, 0.0]
 
     ψ = let s = reshape(s, 1, 2)
@@ -106,7 +106,7 @@ end
     )
 
     @test U ≈ Γa
-    @test V ≈ 1 / √2 * [1 -1; 1 1] # [Index((; site=2, cut=1)), Index((; bond=(1, 2)))])
+    @test V ≈ 1 / √2 * [1 -1; 1 1]
     @test s == [1.0, 0.0]
 
     ψ = let s = reshape(s, 1, 2)
@@ -147,8 +147,7 @@ end
     )
 
     @test U ≈ @view Γa[:, 1:1]
-    @test V ≈ 1 / √2 * [1; 1;;] # [Index((; site=2, cut=1)), Index((; bond=(1, 2)))])
-    # @test size(V, Index((; bond=(1, 2)))) == 1
+    @test V ≈ 1 / √2 * [1; 1;;]
     @test s ≈ [√2]
 end
 
