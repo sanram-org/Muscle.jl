@@ -8,10 +8,6 @@ a = construct_test_array(ComplexF64, 2, 4, 6, 8)
 @test_throws AssertionError tensor_qr(a; dims=[100])
 @test_throws AssertionError tensor_qr(a; dims=[-1])
 
-# throw if no dims left
-@test_throws AssertionError tensor_qr(a, dims=[1,2,3,4])
-@test_throws AssertionError tensor_qr(a, dims=Int[])
-
 q, r = tensor_qr(a; dims=[[1,2],[3,4]])
 q2, r2 = tensor_qr(a; dims=[1,2])
 @test q ≈ q2

@@ -13,7 +13,7 @@ a = construct_test_array(ComplexF64, 3, 4, 6, 2)
 @test_throws AssertionError tensor_eigen(a, dims=Int[])
 
 # throw if non-square 
-@test_throws DimensionMismatch tensor_eigen(a; dims=[[1,3],[2,4]])
+@test_throws AssertionError tensor_eigen(a; dims=[[1,3],[2,4]])
 
 λ, u = tensor_eigen(a; dims=[[1,2],[3,4]])
 λ2, u2 = tensor_eigen(a; dims=[1,2])

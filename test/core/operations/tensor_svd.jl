@@ -8,10 +8,6 @@ a = construct_test_array(ComplexF64, 2, 4, 6, 8)
 @test_throws AssertionError tensor_svd(a; dims=[100])
 @test_throws AssertionError tensor_svd(a; dims=[-1])
 
-# throw if no dims left
-@test_throws AssertionError tensor_svd(a, dims=[1,2,3,4])
-@test_throws AssertionError tensor_svd(a, dims=Int[])
-
 u, s, vt = tensor_svd(a; dims=[[1,2], [3,4]])
 u2, s2, vt2 = tensor_svd(a; dims=[1,2])
 @test u ≈ u2

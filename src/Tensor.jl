@@ -348,7 +348,7 @@ Pad the tensor along the dimension specified by `ind` to reach new `size`.
 Supported methods are `:zeros` and `:rand`.
 """
 function expand(tensor::Tensor, d::Integer, _size; method=:zeros)
-    @assert size(d) <= _size "New size $_size of dimension $d must be bigger than or equal to $(size(tensor, d))"
+    @assert size(tensor, d) <= _size "New size $_size of dimension $d must be bigger than or equal to $(size(tensor, d))"
     size(d) == _size && return tensor # TODO return copy instead?
 
     # TODO use `similar` to do just 1 allocation and set via `views`

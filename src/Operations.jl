@@ -149,7 +149,7 @@ end
 
 @nospecializeinfer function tensor_eigen(@nospecialize(a::AbstractArray); dims, kwargs...)
     dims = factordims(a, dims)
-    @assert prod(i -> size(a, i), dims[1]) == prod(i -> size(a, i), dims[2]) "Eigendecomposition requires a square matrix"
+    @assert prod(i -> size(a, i), dims[1]; init=1) == prod(i -> size(a, i), dims[2]; init=1) "Eigendecomposition requires a square matrix"
     check_factorization(a, dims)
     backend = getbackend(tensor_eigen, platform(a))
     return tensor_eigen(backend, a; dims, kwargs...)
