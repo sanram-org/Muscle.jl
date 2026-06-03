@@ -15,7 +15,7 @@ end
 @nospecializeinfer function Muscle.binary_einsum(
     ::BackendStrided, @nospecialize(a::AbstractArray), @nospecialize(b::AbstractArray); contracting_dims, batching_dims
 )
-    return binary_einsum(
+    return Muscle.binary_einsum(
         BackendStrided(),
         a isa StridedView ? a : StridedView(a),
         b isa StridedView ? b : StridedView(b);
@@ -27,44 +27,56 @@ end
 @nospecializeinfer function Muscle.binary_einsum(
     ::BackendStrided, @nospecialize(a::StridedView), @nospecialize(b::StridedView); contracting_dims, batching_dims
 )
-    @assert isempty(batching_dims) "Batch `binary_einsum` not yet supported for BackendStrided"
+    @assert all(isempty,batching_dims) "Batch `binary_einsum` not yet supported for BackendStrided"
 
-    inner_inds_a, inner_inds_b = contracting_dims
-    outer_inds_a = Int[i for i in 1:ndims(a) if i ∉ inner_inds_a]
-    outer_inds_b = Int[i for i in 1:ndims(b) if i ∉ inner_inds_b]
+    inner_dims_a, inner_dims_b = contracting_dims
+    outer_dims_a = Int[i for i in 1:ndims(a) if i ∉ inner_dims_a]
+    outer_dims_b = Int[i for i in 1:ndims(b) if i ∉ inner_dims_b]
 
-    sizes_left = Int[size(a, i) for i in outer_inds_a]
-    sizes_right = Int[size(b, i) for i in outer_inds_b]
-    sizes_c = Tuple(Int[sizes_left; sizes_right])
+    sizes_outer_a = Int[size(a, i) for i in outer_dims_a]
+    sizes_outer_b = Int[size(b, i) for i in outer_dims_b]
+    sizes_c = Tuple(Int[sizes_outer_a; sizes_outer_b])
 
     c = StridedView(zeros(Base.promote_eltype(a, b), sizes_c), sizes_c)
-    binary_einsum!(BackendStrided(), c, a, b; contracting_dims, batching_dims)
+    Muscle.binary_einsum!(BackendStrided(), c, a, b; contracting_dims, batching_dims)
     return c
 end
 
 @nospecializeinfer function Muscle.binary_einsum!(
-    ::BackendStrided, @nospecialize(c::StridedView), @nospecialize(a::StridedView), @nospecialize(b::StridedView)
+    ::BackendStrided, @nospecialize(c::AbstractArray), @nospecialize(a::AbstractArray), @nospecialize(b::AbstractArray); contracting_dims, batching_dims
 )
-    @assert isempty(batching_dims) "Batch `binary_einsum` not yet supported for BackendStrided"
+    return Muscle.binary_einsum!(
+        BackendStrided(),
+        c isa StridedView ? c : StridedView(c),
+        a isa StridedView ? a : StridedView(a),
+        b isa StridedView ? b : StridedView(b);
+        contracting_dims,
+        batching_dims,
+    )
+end
 
-    inner_inds_a, inner_inds_b = contracting_dims
-    outer_inds_a = Int[i for i in 1:ndims(a) if i ∉ inner_inds_a]
-    outer_inds_b = Int[i for i in 1:ndims(b) if i ∉ inner_inds_b]
+@nospecializeinfer function Muscle.binary_einsum!(
+    ::BackendStrided, @nospecialize(c::StridedView), @nospecialize(a::StridedView), @nospecialize(b::StridedView); contracting_dims, batching_dims
+)
+    @assert all(isempty, batching_dims) "Batch `binary_einsum` not yet supported for BackendStrided"
 
-    sizes_left = Int[size(a, i) for i in outer_inds_a]
-    sizes_right = Int[size(b, i) for i in outer_inds_b]
-    sizes_contract = Int[size(a, i) for i in inner_inds_a]
+    inner_dims_a, inner_dims_b = collect.((Int,), contracting_dims)
+    outer_dims_a = Int[i for i in 1:ndims(a) if i ∉ inner_dims_a]
+    outer_dims_b = Int[i for i in 1:ndims(b) if i ∉ inner_dims_b]
 
-    a_mat = permutedims(a, [inds_left; inds_contract])
-    a_mat = sreshape(a_mat, Tuple([sizes_left; ones(Int, length(sizes_right)); sizes_contract]))
+    sizes_outer_a = Int[size(a, i) for i in outer_dims_a]
+    sizes_outer_b = Int[size(b, i) for i in outer_dims_b]
+    sizes_inner = Int[size(a, i) for i in inner_dims_a]
 
-    b_mat = permutedims(b, [inds_right; inds_contract])
-    b_mat = sreshape(b_mat, Tuple([ones(Int, length(sizes_left)); sizes_right; sizes_contract]))
+    a_mat = permutedims(a, Int[outer_dims_a; inner_dims_a])
+    a_mat = sreshape(a_mat, Tuple([sizes_outer_a; ones(Int, length(sizes_outer_b)); sizes_inner]))
 
-    c_mat = permutedims(c, [inds_left; inds_right])
-    c_mat = sreshape(c_mat, Tuple([sizes_left; sizes_right; ones(Int, length(sizes_contract))]))
+    b_mat = permutedims(b, Int[outer_dims_b; inner_dims_b])
+    b_mat = sreshape(b_mat, Tuple([ones(Int, length(sizes_outer_a)); sizes_outer_b; sizes_inner]))
 
-    tsize = (sizes_left..., sizes_right..., sizes_contract...)
+    c_mat = sreshape(c, Tuple([sizes_outer_a; sizes_outer_b; ones(Int, length(sizes_inner))]))
+
+    tsize = (sizes_outer_a..., sizes_outer_b..., sizes_inner...)
     Strided._mapreducedim!(*, +, zero, tsize, (c_mat, a_mat, b_mat))
     return c
 end
