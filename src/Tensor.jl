@@ -440,9 +440,9 @@ function check_compatible_variance(a, b)
     a == Invariant || b == Invariant
 end
 
-factordims(a::Tensor) = factordims(variance(a), nothing)
+factordims(a::Tensor) = factordims(variance(a))
 
-function factordims(vars, ::Nothing)
+function factordims(vars::Base.AbstractVecOrTuple{Variance})
     left, right = Int[], Int[]
     for (i, var) in enumerate(vars)
         if var == Contravariant
@@ -450,7 +450,7 @@ function factordims(vars, ::Nothing)
         elseif var == Covariant
             push!(right, i)
         else
-            throw(ArgumentError("Cannot infere left and right indices from variance"))
+            throw(ArgumentError("Cannot infer left and right indices from variance"))
         end
     end
     return left, right
