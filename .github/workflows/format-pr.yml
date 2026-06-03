@@ -13,39 +13,24 @@ jobs:
           - main
 
     steps:
-      - uses: julia-actions/setup-julia@v2
+      - uses: actions/checkout@v6
         with:
-          version: '1.10'
-
-      - uses: actions/checkout@v4
+          ref: main
+      - uses: julia-actions/julia-format@v4
         with:
-          ref: ${{ matrix.branch }}
-
-      - name: Install JuliaFormatter.jl
-        shell: julia --color=yes {0}
-        run: |
-          import Pkg
-          Pkg.add(name="JuliaFormatter", version="1")
-
-      - name: Format code
-        shell: julia --color=yes {0}
-        run: |
-          using JuliaFormatter
-          format(".")
-
+          version: '1'
       - name: Create Pull Request
         id: cpr
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: Format code
-          title: 'Format code of branch "${{ matrix.branch }}"'
-          branch: format-${{ matrix.branch }}
+          title: 'Format code of branch "main"'
+          branch: format-main
           delete-branch: true
           labels: format
           reviewers: mofeing
           base: main
-
       - name: Check outputs
         run: |
           echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
