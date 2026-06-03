@@ -17,7 +17,7 @@ end
 @testset "Integration" verbose = true begin
     @safetestset "OMEinsum" include("integration/omeinsum.jl")
     @safetestset "Strided" include("integration/strided.jl")
-    # @safetestset "Dagger" include("integration/dagger.jl")
+    @safetestset "Dagger" include("integration/dagger.jl")
 
     if !isnothing(get(ENV, "MUSCLE_TEST_CUDA", nothing))
         @safetestset "CUDA" include("integration/cuda.jl")

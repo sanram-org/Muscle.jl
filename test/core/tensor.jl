@@ -278,12 +278,12 @@ end
 
 @testset "selectdim" begin
     data = construct_test_array(Int, 2, 2, 2)
-    tensor = Tensor(data)
+    tensor = Tensor(data, [Covariant, Contravariant, Invariant])
 
     @test parent(selectdim(tensor, 1, 1)) == selectdim(data, 1, 1)
     @test parent(selectdim(tensor, 2, 2)) == selectdim(data, 2, 2)
-    @test issetequal(inds(selectdim(tensor, 1, 1)))
-    @test issetequal(inds(selectdim(tensor, 1, 1:1)))
+    @test variance(selectdim(tensor, 1, 1)) == [Contravariant, Invariant]
+    @test variance(selectdim(tensor, 1, 1:1)) == [Covariant, Contravariant, Invariant]
 end
 
 @testset "view" begin
