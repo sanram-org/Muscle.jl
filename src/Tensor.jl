@@ -7,9 +7,9 @@ using LinearAlgebra
 
 Enum representing the variance type of an index. It can take the following values:
 
-- `Covariant`, "down" or transforming in the same way as basis vectors
-- `Contravariant`, "up" or transforming in the opposite way as basis vectors
-- `Invariant` to change of basis
+  - `Covariant`, "down" or transforming in the same way as basis vectors
+  - `Contravariant`, "up" or transforming in the opposite way as basis vectors
+  - `Invariant` to change of basis
 """
 @enum Variance begin
     Covariant
@@ -116,7 +116,9 @@ end
 function Base.similar(t::Tensor, ::Type, dims::Base.Dims{N}; kwargs...) where {N}
     throw(DimensionMismatch("`dims` needs to be of length $(ndims(t))"))
 end
-Base.similar(t::Tensor{T,N}, dims::Base.Dims{N}; variance=variance(t)) where {T,N} = Tensor(similar(parent(t), dims), variance)
+function Base.similar(t::Tensor{T,N}, dims::Base.Dims{N}; variance=variance(t)) where {T,N}
+    Tensor(similar(parent(t), dims), variance)
+end
 function Base.similar(t::Tensor, dims::Base.Dims{N}; kwargs...) where {N}
     throw(DimensionMismatch("`dims` needs to be of length $(ndims(t))"))
 end
@@ -289,11 +291,11 @@ Base.conj(x::Tensor{<:Complex,0}) = Tensor(conj(parent(x)), Variance[])
 """
     Base.adjoint(::Tensor)
 
-Return the adjoint of the tensor; i.e. the 
+Return the adjoint of the tensor.
 
 !!! note
 
-    This method doesn't transpose the array.
+    This method doesn't transpose the array. It just complex-conjugates the array updates the variance info.
 """
 Base.adjoint(t::Tensor) = Tensor(conj(parent(t)), adjoint.(variance(t)))
 
@@ -427,7 +429,7 @@ function isisometry(a::Tensor, dims; atol::Real=1e-12)
     @assert allunique(dims)
     @assert all(∈(1:ndims(a)), dims)
     in_dims = filter!(∉(dims), collect(1:ndims(a)))
-    b = einsum(a', a; dims = (in_dims, in_dims))
+    b = einsum(a', a; dims=(in_dims, in_dims))
     n = prod(i -> size(a, i), dims)
     b_mat = reshape(parent(b), n, n)
     return isapprox(b_mat, LinearAlgebra.I(n); atol)
@@ -436,8 +438,9 @@ end
 # ops
 function check_compatible_variance(a, b)
     return a == Covariant && b == Contravariant ||
-    a == Contravariant && b == Covariant ||
-    a == Invariant || b == Invariant
+           a == Contravariant && b == Covariant ||
+           a == Invariant ||
+           b == Invariant
 end
 
 factordims(a::Tensor) = factordims(variance(a))
@@ -471,7 +474,6 @@ function factordims(a::AbstractArray, dims::Base.AbstractVecOrTuple{Base.Abstrac
     end
     return dims
 end
-
 
 """
     einsum(a::Tensor, b::Tensor; dims::NTuple{2,Tuple})
@@ -561,10 +563,10 @@ function simple_update(a::Tensor, b::Tensor, g::Tensor; physical_dims, bond_dims
         parent(a),
         parent(b),
         parent(g);
-        dim_physical_a = physical_dims[1],
-        dim_physical_b = physical_dims[2],
-        dim_bond_a = bond_dims[1],
-        dim_bond_b = bond_dims[2],
-        kwargs...
+        dim_physical_a=physical_dims[1],
+        dim_physical_b=physical_dims[2],
+        dim_bond_a=bond_dims[1],
+        dim_bond_b=bond_dims[2],
+        kwargs...,
     )
 end

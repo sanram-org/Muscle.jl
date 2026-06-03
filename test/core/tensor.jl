@@ -13,7 +13,7 @@ using LinearAlgebra: LinearAlgebra
 
     @testset "Array" begin
         data = ones(2, 2, 2)
-        
+
         tensor = Tensor(data)
         @test all(==(Invariant), variance(tensor))
         @test parent(tensor) === data
@@ -455,7 +455,8 @@ end
         @test variance(new) == [Covariant, Contravariant, Covariant]
         @test size(new, 1) == 3
         @test view(new, 1 => 1:2) == tensor
-        @test view(new, 1 => 3:3) ≈ Tensor(zeros(Tuple(d == 1 ? 1 : size(tensor, d) for d in 1:ndims(tensor))), variance(tensor))
+        @test view(new, 1 => 3:3) ≈
+            Tensor(zeros(Tuple(d == 1 ? 1 : size(tensor, d) for d in 1:ndims(tensor))), variance(tensor))
     end
 
     let new = Muscle.expand(tensor, 2, 3; method=:zeros)
@@ -506,13 +507,13 @@ end
 
 @testset "fuse" begin
     tensor = Tensor(construct_test_array(Int, 2, 3), [Covariant, Contravariant])
-    @test_throws AssertionError fuse(tensor, (1,2))
+    @test_throws AssertionError fuse(tensor, (1, 2))
 
     tensor = Tensor(construct_test_array(Int, 2, 3), [Covariant, Covariant])
-    grouped = fuse(tensor, [1,2])
+    grouped = fuse(tensor, [1, 2])
     @test vec(tensor) ≈ parent(grouped)
 
-    grouped = fuse(tensor, [2,1])
+    grouped = fuse(tensor, [2, 1])
     @test vec(transpose(parent(tensor))) ≈ parent(grouped)
 
     tensor = Tensor(construct_test_array(Int, 2, 3, 4), [Covariant, Contravariant, Covariant])

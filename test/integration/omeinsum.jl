@@ -9,21 +9,21 @@ using OMEinsum
     @testset "matmul: ij,jk->ik" begin
         a = ones(2, 3)
         b = ones(3, 4)
-        c = binary_einsum(a, b; contracting_dims=[[2],[1]])
+        c = binary_einsum(a, b; contracting_dims=[[2], [1]])
         @test c == 3 * ones(2, 4)
     end
 
     @testset "inner product: ij,ji->" begin
         a = ones(3, 4)
         b = ones(4, 3)
-        c = binary_einsum(a, b; contracting_dims=[[2,1],[1,2]])
+        c = binary_einsum(a, b; contracting_dims=[[2, 1], [1, 2]])
         @test c == fill(12)
     end
 
     @testset "outer product: ij,kl->ijkl" begin
         a = ones(2, 3)
         b = ones(4, 5)
-        c = binary_einsum(a, b; contracting_dims=[Int[],Int[]])
+        c = binary_einsum(a, b; contracting_dims=[Int[], Int[]])
         @test c == fill(1, 2, 3, 4, 5)
     end
 
@@ -31,11 +31,11 @@ using OMEinsum
         a = ones(2, 3)
         α = fill(2.0)
 
-        let c = binary_einsum(a, α; contracting_dims=((),()))
+        let c = binary_einsum(a, α; contracting_dims=((), ()))
             @test c == α[] .* a
         end
 
-        let c = binary_einsum(α, a; contracting_dims=((),()))
+        let c = binary_einsum(α, a; contracting_dims=((), ()))
             @test c == α[] .* a
         end
     end
@@ -45,7 +45,7 @@ using OMEinsum
         a = ones(2, 3, 6)
         b = ones(3, 4, 6)
 
-        @test_throws AssertionError binary_einsum(a, b; contracting_dims=[[2],[1]], batching_dims=[[3],[3]])
+        @test_throws AssertionError binary_einsum(a, b; contracting_dims=[[2], [1]], batching_dims=[[3], [3]])
     end
 
     @testset "manual" begin
@@ -55,7 +55,7 @@ using OMEinsum
 
             # contraction of all common indices
             @testset "ijk,klj->il" begin
-                c = binary_einsum(a, b; contracting_dims=[[2,3],[3,1]])
+                c = binary_einsum(a, b; contracting_dims=[[2, 3], [3, 1]])
                 @test c ≈ begin
                     a_mat = reshape(a, 2, 12)
                     b_mat = reshape(permutedims(b, [3, 1, 2]), 12, 5)
@@ -66,7 +66,7 @@ using OMEinsum
             # contraction of not all common indices
             # hyperindices not supported on backendbase
             @testset "ijk,klj->ikl" begin
-                @test_throws AssertionError binary_einsum(a, b; contracting_dims=[[2],[3]], batching_dims=[[3],[1]])
+                @test_throws AssertionError binary_einsum(a, b; contracting_dims=[[2], [3]], batching_dims=[[3], [1]])
             end
         end
     end

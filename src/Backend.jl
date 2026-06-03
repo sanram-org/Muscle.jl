@@ -30,7 +30,7 @@ promote_platform_result(::Missing, @nospecialize(ba::Platform)) = ba
 promote_platform_result(@nospecialize(ab::Platform), @nospecialize(ba::Platform)) = (@assert(ab == ba); ab)
 
 promote_platform_rule(@nospecialize(::Platform), @nospecialize(::Platform)) = missing
-promote_platform_rule(::P, ::P) where {P <: Platform} = P()
+promote_platform_rule(::P, ::P) where {P<:Platform} = P()
 promote_platform_rule(::PlatformHost, ::PlatformCUDA) = PlatformCUDA()
 promote_platform_rule(::PlatformHost, ::PlatformReactant) = PlatformReactant()
 promote_platform_rule(::PlatformHost, ::PlatformDagger) = PlatformDagger()
@@ -42,14 +42,14 @@ promote_platform_rule(::PlatformCUDA, ::PlatformReactant) = PlatformReactant()
 Abstract type representing a computational backend for tensor operations.
 Current backends include:
 
-- `BackendBase` using purely Base and/or LinearAlgebra stdlibs.
-- `BackendStrided` using [Strided.jl](https://github.com/QuantumKitHub/Strided.jl).
-- `BackendOMEinsum` using the [OMEinsum.jl](https://github.com/under-peter/OMEinsum.jl).
-- `BackendCUDA` using [CUDA.jl](https://github.com/JuliaGPU/CUDA.jl).
-- `BackendCuTENSOR` using [CuTENSOR.jl](https://github.com/JuliaGPU/CUDA.jl/tree/master/lib/cutensor).
-- `BackendCuTensorNet` using [CuTensorNet.jl](https://github.com/JuliaGPU/CUDA.jl/tree/master/lib/cutensornet).
-- `BackendReactant` using [Reactant.jl](https://github.com/EnzymeAD/Reactant.jl).
-- `BackendDagger` using [Dagger.jl](https://github.com/JuliaParallel/Dagger.jl).
+  - `BackendBase` using purely Base and/or LinearAlgebra stdlibs.
+  - `BackendStrided` using [Strided.jl](https://github.com/QuantumKitHub/Strided.jl).
+  - `BackendOMEinsum` using the [OMEinsum.jl](https://github.com/under-peter/OMEinsum.jl).
+  - `BackendCUDA` using [CUDA.jl](https://github.com/JuliaGPU/CUDA.jl).
+  - `BackendCuTENSOR` using [CuTENSOR.jl](https://github.com/JuliaGPU/CUDA.jl/tree/master/lib/cutensor).
+  - `BackendCuTensorNet` using [CuTensorNet.jl](https://github.com/JuliaGPU/CUDA.jl/tree/master/lib/cutensornet).
+  - `BackendReactant` using [Reactant.jl](https://github.com/EnzymeAD/Reactant.jl).
+  - `BackendDagger` using [Dagger.jl](https://github.com/JuliaParallel/Dagger.jl).
 """
 abstract type Backend end
 

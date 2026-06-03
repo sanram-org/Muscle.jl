@@ -27,14 +27,7 @@ op_cx = reshape(
 
 @testset "apply identity" begin
     U, s, V = simple_update(
-        Γa,
-        Γb,
-        op_identity;
-        dim_physical_a=1,
-        dim_physical_b=1,
-        dim_bond_a=2,
-        dim_bond_b=2,
-        absorb=Muscle.DontAbsorb(),
+        Γa, Γb, op_identity; dim_physical_a=1, dim_physical_b=1, dim_bond_a=2, dim_bond_b=2, absorb=Muscle.DontAbsorb()
     )
 
     @test U ≈ Γa
@@ -42,21 +35,14 @@ op_cx = reshape(
     @test s ≈ [1.0, 1.0]
 
     ψ = let s = reshape(s, 1, 2)
-        binary_einsum(U .* s, V; contracting_dims=[[2],[1]])
+        binary_einsum(U .* s, V; contracting_dims=[[2], [1]])
     end
-    @test binary_einsum(ψ, conj(ψ); contracting_dims=[[1,2],[1,2]]) |> only ≈ 2.0
+    @test binary_einsum(ψ, conj(ψ); contracting_dims=[[1, 2], [1, 2]]) |> only ≈ 2.0
 end
 
 @testset "apply cx" begin
     U, s, V = simple_update(
-        Γa,
-        Γb,
-        op_cx;
-        dim_physical_a=1,
-        dim_physical_b=1,
-        dim_bond_a=2,
-        dim_bond_b=2,
-        absorb=Muscle.DontAbsorb(),
+        Γa, Γb, op_cx; dim_physical_a=1, dim_physical_b=1, dim_bond_a=2, dim_bond_b=2, absorb=Muscle.DontAbsorb()
     )
 
     @test U ≈ Γa
@@ -64,9 +50,9 @@ end
     @test s == [√2, 0.0]
 
     ψ = let s = reshape(s, 1, 2)
-        binary_einsum(U .* s, V; contracting_dims=[[2],[1]])
+        binary_einsum(U .* s, V; contracting_dims=[[2], [1]])
     end
-    @test binary_einsum(ψ, conj(ψ); contracting_dims=[[1,2],[1,2]]) |> only ≈ 2.0
+    @test binary_einsum(ψ, conj(ψ); contracting_dims=[[1, 2], [1, 2]]) |> only ≈ 2.0
 end
 
 @testset "apply identity, normalize" begin
@@ -87,9 +73,9 @@ end
     @test s ≈ [1 / √2, 1 / √2]
 
     ψ = let s = reshape(s, 1, 2)
-        binary_einsum(U .* s, V; contracting_dims=[[2],[1]])
+        binary_einsum(U .* s, V; contracting_dims=[[2], [1]])
     end
-    @test binary_einsum(ψ, conj(ψ); contracting_dims=[[1,2],[1,2]]) |> only ≈ 1.0
+    @test binary_einsum(ψ, conj(ψ); contracting_dims=[[1, 2], [1, 2]]) |> only ≈ 1.0
 end
 
 @testset "apply cx, normalize" begin
@@ -110,9 +96,9 @@ end
     @test s == [1.0, 0.0]
 
     ψ = let s = reshape(s, 1, 2)
-        binary_einsum(U .* s, V; contracting_dims=[[2],[1]])
+        binary_einsum(U .* s, V; contracting_dims=[[2], [1]])
     end
-    @test binary_einsum(ψ, conj(ψ); contracting_dims=[[1,2],[1,2]]) |> only ≈ 1.0
+    @test binary_einsum(ψ, conj(ψ); contracting_dims=[[1, 2], [1, 2]]) |> only ≈ 1.0
 end
 
 @testset "apply identity, truncate to χ=1" begin
@@ -154,33 +140,19 @@ end
 # TODO test better
 @testset "apply identity, absorb s to u" begin
     U, V = simple_update(
-        Γa,
-        Γb,
-        op_identity;
-        dim_physical_a=1,
-        dim_physical_b=1,
-        dim_bond_a=2,
-        dim_bond_b=2,
-        absorb=Muscle.AbsorbU(),
+        Γa, Γb, op_identity; dim_physical_a=1, dim_physical_b=1, dim_bond_a=2, dim_bond_b=2, absorb=Muscle.AbsorbU()
     )
 
-    @test norm(U) ≈ norm(binary_einsum(Γa, Γb; contracting_dims=[[2],[2]]))
+    @test norm(U) ≈ norm(binary_einsum(Γa, Γb; contracting_dims=[[2], [2]]))
 end
 
 # TODO test better
 @testset "apply identity, absorb s to v" begin
     U, V = simple_update(
-        Γa,
-        Γb,
-        op_identity;
-        dim_physical_a=1,
-        dim_physical_b=1,
-        dim_bond_a=2,
-        dim_bond_b=2,
-        absorb=Muscle.AbsorbV(),
+        Γa, Γb, op_identity; dim_physical_a=1, dim_physical_b=1, dim_bond_a=2, dim_bond_b=2, absorb=Muscle.AbsorbV()
     )
 
-    @test norm(U) ≈ norm(binary_einsum(Γa, Γb; contracting_dims=[[2],[2]]))
+    @test norm(U) ≈ norm(binary_einsum(Γa, Γb; contracting_dims=[[2], [2]]))
 end
 
 # TODO test better
@@ -197,5 +169,6 @@ end
     )
 
     @test norm(U) ≈ norm(V)
-    @test norm(binary_einsum(Γa, Γb; contracting_dims=[[2],[2]])) ≈ norm(binary_einsum(U, V; contracting_dims=[[2],[2]]))
+    @test norm(binary_einsum(Γa, Γb; contracting_dims=[[2], [2]])) ≈
+        norm(binary_einsum(U, V; contracting_dims=[[2], [2]]))
 end

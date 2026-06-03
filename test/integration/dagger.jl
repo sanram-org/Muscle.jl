@@ -17,8 +17,8 @@ using Distributed
                 block_a = distribute(a, Dagger.Blocks(1, 1))
                 block_b = distribute(b, Dagger.Blocks(1, 1))
 
-                c = binary_einsum(a, b; contracting_dims=[[2],[1]])
-                block_c = binary_einsum(block_a, block_b; contracting_dims=[[2],[1]])
+                c = binary_einsum(a, b; contracting_dims=[[2], [1]])
+                block_c = binary_einsum(block_a, block_b; contracting_dims=[[2], [1]])
 
                 @test block_c isa DArray
                 @test all(==((1, 1)) ∘ size, Dagger.domainchunks(block_c))

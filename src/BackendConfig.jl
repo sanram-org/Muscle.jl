@@ -26,7 +26,6 @@ Base.@nospecializeinfer function available_backends(@nospecialize(platform::Plat
     return filter(backend -> platform in supported_platforms(backend), AVAILABLE_BACKENDS)
 end
 
-
 Base.@nospecializeinfer function available_backends(@nospecialize(op::Function))
     return @lock BACKEND_LOCK get!(AVAILABLE_BACKENDS_FOR_OP, op, Backend[])
 end
@@ -35,7 +34,7 @@ Base.@nospecializeinfer function available_backends(@nospecialize(op::Function),
     return available_backends(platform) ∩ available_backends(op)
 end
 
-const AVAILABLE_BACKENDS_FOR_OP = Dict{Function, Vector{Backend}}([
+const AVAILABLE_BACKENDS_FOR_OP = Dict{Function,Vector{Backend}}([
     binary_einsum => Backend[BackendBase()],
     binary_einsum! => Backend[BackendBase()],
     tensor_qr => Backend[BackendBase()],
@@ -45,7 +44,7 @@ const AVAILABLE_BACKENDS_FOR_OP = Dict{Function, Vector{Backend}}([
     # simple_update! => Backend[BackendBase()],
 ])
 
-const DEFAULT_BACKEND = Dict{Tuple{Function, Platform}, Backend}([
+const DEFAULT_BACKEND = Dict{Tuple{Function,Platform},Backend}([
     # binary_einsum
     (binary_einsum, PlatformHost()) => BackendBase(),
     (binary_einsum!, PlatformHost()) => BackendBase(),
@@ -81,7 +80,9 @@ Base.@nospecializeinfer function register_backend_for_op!(@nospecialize(f::Funct
     return nothing
 end
 
-Base.@nospecializeinfer function setbackend!(@nospecialize(f::Function), @nospecialize(platform::Platform), @nospecialize(backend::Backend))
+Base.@nospecializeinfer function setbackend!(
+    @nospecialize(f::Function), @nospecialize(platform::Platform), @nospecialize(backend::Backend)
+)
     @lock BACKEND_LOCK begin
         @assert is_backend_available(backend) "Backend $backend is not available. Please register it first using `register_backend!`."
         @assert backend ∈ available_backends(f, platform) "Backend $backend does not support function $f on platform $platform."

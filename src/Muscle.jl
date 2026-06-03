@@ -20,12 +20,12 @@ using PrecompileTools
             # ij,jk->ik
             a = Tensor(ones(Ta, 2, 2))
             b = Tensor(ones(Tb, 2, 2))
-            einsum(a, b; dims=((2,),(1,)))
+            einsum(a, b; dims=((2,), (1,)))
 
             # ijk,jkl->il
             a = Tensor(ones(Ta, 2, 2, 2))
             b = Tensor(ones(Tb, 2, 2, 2))
-            einsum(a, b; dims=((2,3), (1,2)))
+            einsum(a, b; dims=((2, 3), (1, 2)))
         end
     end
 end

@@ -8,4 +8,4 @@ using Muscle: factordims
 
 @test factordims([Covariant, Contravariant]) == ([1], [2])
 @test factordims([Contravariant, Covariant]) == ([2], [1])
-@test factordims([Covariant, Contravariant, Covariant, Contravariant]) == ([1,3], [2,4])
+@test factordims([Covariant, Contravariant, Covariant, Contravariant]) == ([1, 3], [2, 4])

@@ -1,6 +1,8 @@
 using Base: @nospecializeinfer
 
-@nospecializeinfer function check_binary_einsum(@nospecialize(a), @nospecialize(b), @nospecialize(contracting_dims), @nospecialize(batching_dims))
+@nospecializeinfer function check_binary_einsum(
+    @nospecialize(a), @nospecialize(b), @nospecialize(contracting_dims), @nospecialize(batching_dims)
+)
     @assert contracting_dims isa Base.AbstractVecOrTuple{Base.AbstractVecOrTuple}
     @assert length(contracting_dims) == 2
     @assert length(contracting_dims[1]) == length(contracting_dims[2])
@@ -14,19 +16,23 @@ using Base: @nospecializeinfer
 
     @assert all(∈(1:ndims(a)), batching_dims[1])
     @assert all(∈(1:ndims(b)), batching_dims[2])
-    
+
     @assert allequal(((ai, bi),) -> size(a, ai) == size(b, bi), zip(contracting_dims[1], contracting_dims[2]))
     @assert allequal(((ai, bi),) -> size(a, ai) == size(b, bi), zip(batching_dims[1], batching_dims[2]))
 end
 
-function binary_einsum(@nospecialize(a::AbstractArray), @nospecialize(b::AbstractArray); contracting_dims, batching_dims=((),()))
+function binary_einsum(
+    @nospecialize(a::AbstractArray), @nospecialize(b::AbstractArray); contracting_dims, batching_dims=((), ())
+)
     check_binary_einsum(a, b, contracting_dims, batching_dims)
     _platform = promote_platform(platform(a), platform(b))
     backend = getbackend(binary_einsum, _platform)
     return binary_einsum(backend, a, b; contracting_dims, batching_dims)
 end
 
-@nospecializeinfer function binary_einsum(::BackendBase, @nospecialize(a::AbstractArray), @nospecialize(b::AbstractArray); contracting_dims, batching_dims)
+@nospecializeinfer function binary_einsum(
+    ::BackendBase, @nospecialize(a::AbstractArray), @nospecialize(b::AbstractArray); contracting_dims, batching_dims
+)
     @assert isempty(batching_dims[1]) "Batch `binary_einsum` not yet supported in BackendBase"
 
     inner_inds_a, inner_inds_b = collect.(contracting_dims)
@@ -46,7 +52,13 @@ end
     return c
 end
 
-function binary_einsum!(@nospecialize(c::AbstractArray), @nospecialize(a::AbstractArray), @nospecialize(b::AbstractArray); @nospecialize(contracting_dims), batching_dims=((),()))
+function binary_einsum!(
+    @nospecialize(c::AbstractArray),
+    @nospecialize(a::AbstractArray),
+    @nospecialize(b::AbstractArray);
+    @nospecialize(contracting_dims),
+    batching_dims=((), ()),
+)
     check_binary_einsum(a, b, contracting_dims, batching_dims)
     batch = Int[size(a, i) for i in batching_dims[1]]
     out_a = Int[size(a, i) for i in 1:ndims(a) if i ∉ contracting_dims[1]]
@@ -59,14 +71,28 @@ function binary_einsum!(@nospecialize(c::AbstractArray), @nospecialize(a::Abstra
     return c
 end
 
-@nospecializeinfer function binary_einsum!(@nospecialize(B::Backend), @nospecialize(c::AbstractArray), @nospecialize(a::AbstractArray), @nospecialize(b::AbstractArray); @nospecialize(contracting_dims), @nospecialize(batching_dims))
+@nospecializeinfer function binary_einsum!(
+    @nospecialize(B::Backend),
+    @nospecialize(c::AbstractArray),
+    @nospecialize(a::AbstractArray),
+    @nospecialize(b::AbstractArray);
+    @nospecialize(contracting_dims),
+    @nospecialize(batching_dims)
+)
     @debug "Fallback to generic `binary_einsum!` implementation for backend $B with intermediate copying"
     _c = binary_einsum(B, a, b; contracting_dims, batching_dims)
     copyto!(parent(c), parent(_c))
     return c
 end
 
-@nospecializeinfer function binary_einsum!(::BackendBase, @nospecialize(c::AbstractArray), @nospecialize(a::AbstractArray), @nospecialize(b::AbstractArray); contracting_dims, batching_dims)
+@nospecializeinfer function binary_einsum!(
+    ::BackendBase,
+    @nospecialize(c::AbstractArray),
+    @nospecialize(a::AbstractArray),
+    @nospecialize(b::AbstractArray);
+    contracting_dims,
+    batching_dims,
+)
     @assert isempty(batching_dims[1]) "Batch `binary_einsum` not yet supported in BackendBase"
 
     inner_inds_a, inner_inds_b = collect.(contracting_dims)
@@ -191,7 +217,7 @@ struct AbsorbEqually <: AbsorbBehavior end
     dim_bond_a,
     dim_bond_b,
     absorb=DontAbsorb,
-    kwargs...
+    kwargs...,
 )
     @assert ndims(a) >= 2
     @assert ndims(b) >= 2
@@ -274,7 +300,7 @@ end
 
     # physical output ind of g for b
     push!(dims_outer_b, ndims(Θ))
-    
+
     # TODO other factorizations?
     dims = (dims_outer_a, dims_outer_b)
     u, s, vt = tensor_svd(Θ; dims)
