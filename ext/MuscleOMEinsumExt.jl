@@ -78,7 +78,7 @@ end
 
     inds_c = Int[batch_inds; outer_inds_a; outer_inds_b]
 
-    OMEinsum.einsum!((inds_a, inds_b), inds_c, (a, b), c, true, false)
+    OMEinsum.einsum!((inds_a, inds_b), inds_c, (a, b), c, true, false, get_size_dict((inds_a, inds_b), (a,b)))
     return c
 end
 
