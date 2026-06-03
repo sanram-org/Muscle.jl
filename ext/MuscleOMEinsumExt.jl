@@ -7,8 +7,8 @@ using Base: @nospecializeinfer
 
 function __init__()
     Muscle.register_backend!(BackendOMEinsum())
-    Muscle.Operations.register_backend_for_op!(Muscle.Operations.binary_einsum, BackendOMEinsum())
-    Muscle.Operations.register_backend_for_op!(Muscle.Operations.binary_einsum!, BackendOMEinsum())
+    Muscle.register_backend_for_op!(Muscle.binary_einsum, BackendOMEinsum())
+    Muscle.register_backend_for_op!(Muscle.binary_einsum!, BackendOMEinsum())
 end
 
 @nospecializeinfer function Muscle.binary_einsum(

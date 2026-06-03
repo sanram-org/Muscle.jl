@@ -8,8 +8,8 @@ using Base: @nospecializeinfer
 
 function __init__()
     Muscle.register_backend!(BackendStrided())
-    Muscle.Operations.register_backend_for_op!(Muscle.Operations.binary_einsum, BackendStrided())
-    Muscle.Operations.register_backend_for_op!(Muscle.Operations.binary_einsum!, BackendStrided())
+    Muscle.register_backend_for_op!(Muscle.binary_einsum, BackendStrided())
+    Muscle.register_backend_for_op!(Muscle.binary_einsum!, BackendStrided())
 end
 
 @nospecializeinfer function Muscle.binary_einsum(

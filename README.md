@@ -161,7 +161,7 @@ Although most backends see it as a composite operation (i.e. they will call othe
 
 ## Backends
 
-Muscle implements an unconventional backend system in which multiple backends can be used for different `Muscle.Operations` at the same time, as long as they support the same `Platform`.
+Muscle implements an unconventional backend system in which multiple backends can be used for different `Muscle` at the same time, as long as they support the same `Platform`.
 
 Currently, Muscle supports the following `Platform`s:
 
@@ -174,9 +174,9 @@ For example, a user may want to use CuTensorNet.jl for `simple_update` and OMEin
 
 ```julia
 using Muscle
-using Muscle.Operations: setbackend!, simple_update, binary_einsum
-Muscle.Operations.setbackend!(simple_update, Muscle.PlatformCUDA(), Muscle.BackendCuTensorNet())
-Muscle.Operations.setbackend!(binary_einsum, Muscle.PlatformCUDA(), Muscle.BackendOMEinsum())
+using Muscle: setbackend!, simple_update, binary_einsum
+Muscle.setbackend!(simple_update, Muscle.PlatformCUDA(), Muscle.BackendCuTensorNet())
+Muscle.setbackend!(binary_einsum, Muscle.PlatformCUDA(), Muscle.BackendOMEinsum())
 ```
 
 The currently support table of backends and operations is,

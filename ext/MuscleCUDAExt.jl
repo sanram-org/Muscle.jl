@@ -8,8 +8,8 @@ using Base: @nospecializeinfer
 
 function __init__()
     Muscle.register_backend!(BackendCUDA())
-    Muscle.Operations.register_backend_for_op!(Muscle.Operations.binary_einsum, BackendCuTENSOR())
-    Muscle.Operations.register_backend_for_op!(Muscle.Operations.binary_einsum!, BackendCuTENSOR())
+    Muscle.register_backend_for_op!(Muscle.binary_einsum, BackendCuTENSOR())
+    Muscle.register_backend_for_op!(Muscle.binary_einsum!, BackendCuTENSOR())
 end
 
 @nospecializeinfer Muscle.platform(@nospecialize(::CuArray)) = Muscle.PlatformCUDA()

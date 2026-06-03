@@ -8,9 +8,9 @@ using Base: @nospecializeinfer
 
 function __init__()
     Muscle.register_backend!(BackendCuTensorNet())
-    Muscle.Operations.register_backend_for_op!(Muscle.Operations.simple_update, BackendCuTensorNet())
-    Muscle.Operations.register_backend_for_op!(Muscle.Operations.tensor_qr, BackendCuTensorNet())
-    Muscle.Operations.register_backend_for_op!(Muscle.Operations.tensor_svd, BackendCuTensorNet())
+    Muscle.register_backend_for_op!(Muscle.simple_update, BackendCuTensorNet())
+    Muscle.register_backend_for_op!(Muscle.tensor_qr, BackendCuTensorNet())
+    Muscle.register_backend_for_op!(Muscle.tensor_svd, BackendCuTensorNet())
 end
 
 # TODO customize SVD algorithm

@@ -21,7 +21,7 @@ function __init__()
     Muscle.register_backend!(BackendReactant())
 
     for op in [Muscle.binary_einsum, Muscle.binary_einsum!, Muscle.tensor_svd]
-        Muscle.Operations.register_backend_for_op!(op, BackendReactant())
+        Muscle.register_backend_for_op!(op, BackendReactant())
     end
 
     muscle_skip_rewrites()
