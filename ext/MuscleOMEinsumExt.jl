@@ -18,10 +18,10 @@ end
     contracting_dims,
     batching_dims,
 )
-    inner_dims_a, inner_dims_b = contracting_dims
-    batch_dims_a, batch_dims_b = batching_dims
-    outer_dims_a = filter(d -> d ∉ inner_dims_a && d ∉ batch_dims_a, 1:ndims(a))
-    outer_dims_b = filter(d -> d ∉ inner_dims_b && d ∉ batch_dims_b, 1:ndims(b))
+    inner_dims_a, inner_dims_b = collect.(contracting_dims)
+    batch_dims_a, batch_dims_b = collect.(batching_dims)
+    outer_dims_a = Int[size(a, i) for i in 1:ndims(a) if i ∉ inner_dims_a && i ∉ batch_dims_a]
+    outer_dims_b = Int[size(b, i) for i in 1:ndims(b) if i ∉ inner_dims_b && i ∉ batch_dims_b]
 
     csize = Int[
         Int[size(a, d) for d in batch_dims_a]
@@ -42,10 +42,10 @@ end
     contracting_dims,
     batching_dims,
 )
-    inner_dims_a, inner_dims_b = contracting_dims
-    batch_dims_a, batch_dims_b = batching_dims
-    outer_dims_a = filter(d -> d ∉ inner_dims_a && d ∉ batch_dims_a, 1:ndims(a))
-    outer_dims_b = filter(d -> d ∉ inner_dims_b && d ∉ batch_dims_b, 1:ndims(b))
+    inner_dims_a, inner_dims_b = collect.(contracting_dims)
+    batch_dims_a, batch_dims_b = collect.(batching_dims)
+    outer_dims_a = Int[size(a, i) for i in 1:ndims(a) if i ∉ inner_dims_a && i ∉ batch_dims_a]
+    outer_dims_b = Int[size(b, i) for i in 1:ndims(b) if i ∉ inner_dims_b && i ∉ batch_dims_b]
 
     n_inner = length(inner_dims_a)
     n_batch = length(batch_dims_a)
