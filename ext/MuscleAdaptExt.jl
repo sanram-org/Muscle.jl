@@ -3,7 +3,7 @@ module MuscleAdaptExt
 using Muscle
 using Adapt
 
-Adapt.adapt_structure(to, x::Tensor) = Tensor(adapt(to, parent(x)), inds(x))
+Adapt.adapt_structure(to, x::Tensor) = Tensor(adapt(to, parent(x)), variance(x))
 
 Adapt.parent_type(::Type{Tensor{T,N,A}}) where {T,N,A} = A
 Adapt.parent_type(::Type{Tensor{T,N}}) where {T,N} = AbstractArray{T,N}
