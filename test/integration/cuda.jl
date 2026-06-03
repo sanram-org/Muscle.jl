@@ -28,7 +28,7 @@ end
 
 @testset "scale: ij,->ij" begin
     a = CUDA.ones(2, 3)
-    α = fill(2.0)
+    α = CuArray(fill(2.0))
 
     let c = binary_einsum(a, α; contracting_dims=((), ()))
         @test @allowscalar c == α[] .* a
@@ -44,6 +44,7 @@ end
     a = CUDA.ones(2, 3, 6)
     b = CUDA.ones(3, 4, 6)
 
+    # TODO there's an numerical error
     @test_throws AssertionError binary_einsum(a, b; contracting_dims=[[2], [1]], batching_dims=[[3], [3]])
 end
 

@@ -5,9 +5,10 @@ using Muscle: BackendCuTENSOR
 using CUDA
 using cuTENSOR
 using Base: @nospecializeinfer
+using LinearAlgebra: mul!
 
 function __init__()
-    Muscle.register_backend!(BackendCUDA())
+    Muscle.register_backend!(BackendCuTENSOR())
     Muscle.register_backend_for_op!(Muscle.binary_einsum, BackendCuTENSOR())
     Muscle.register_backend_for_op!(Muscle.binary_einsum!, BackendCuTENSOR())
 end
@@ -17,7 +18,7 @@ end
 ## `CUDA` (uses cuTENSOR)
 @nospecializeinfer function Muscle.binary_einsum(
     ::BackendCuTENSOR,
-    @nospecializeinfer(a::AbstractArray),
+    @nospecialize(a::AbstractArray),
     @nospecialize(b::AbstractArray);
     contracting_dims,
     batching_dims,
@@ -34,7 +35,7 @@ end
 
     T = Base.promote_eltype(a, b)
     c = CUDA.zeros(T, Tuple(size_c))
-    binary_einsum!(BackendCuTENSOR(), c, a, b; contracting_dims, batching_dims)
+    Muscle.binary_einsum!(BackendCuTENSOR(), c, a, b; contracting_dims, batching_dims)
     return c
 end
 
@@ -46,13 +47,21 @@ end
     contracting_dims,
     batching_dims,
 )
-    inner_dims_a, inner_dims_b = contracting_dims
-    batch_dims_a, batch_dims_b = batching_dims
+    @assert all(isempty, batching_dims) "Batch contraction not yet supported in BackendCuTENSOR"
+
+    # shortcut that fixes multiplication by scalar
+    if ndims(a) == 0 || ndims(b) == 0
+        c .= a .* b
+        return c
+    end
+
+    inner_dims_a, inner_dims_b = collect.((Int,), contracting_dims)
+    batch_dims_a, batch_dims_b = collect.((Int,), batching_dims)
     outer_dims_a = Int[i for i in 1:ndims(a) if i ∉ inner_dims_a && i ∉ batch_dims_a]
     outer_dims_b = Int[i for i in 1:ndims(b) if i ∉ inner_dims_b && i ∉ batch_dims_b]
 
-    modes_a = collect(1:ndims(a))
-    modes_b = ndims(a) .+ (1:ndims(b))
+    modes_a = collect(Int, 1:ndims(a))
+    modes_b = collect(Int, ndims(a) .+ (1:ndims(b)))
 
     n = ndims(a) + ndims(b) + 1
     for (ai, bi) in zip(inner_dims_a, inner_dims_b)
