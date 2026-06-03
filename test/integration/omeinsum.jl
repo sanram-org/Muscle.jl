@@ -40,12 +40,11 @@ using OMEinsum
         end
     end
 
-    # hyperindices not yet supported on backendbase
     @testset "batch matmul: ijb,jkb->ikb" begin
         a = ones(2, 3, 6)
         b = ones(3, 4, 6)
-
-        @test_throws AssertionError binary_einsum(a, b; contracting_dims=[[2], [1]], batching_dims=[[3], [3]])
+        c = binary_einsum(a, b; contracting_dims=[[2], [1]], batching_dims=[[3], [3]])
+        @test c ≈ fill(3.0, 6, 2, 4)
     end
 
     @testset "manual" begin
@@ -66,7 +65,8 @@ using OMEinsum
             # contraction of not all common indices
             # hyperindices not supported on backendbase
             @testset "ijk,klj->ikl" begin
-                @test_throws AssertionError binary_einsum(a, b; contracting_dims=[[2], [3]], batching_dims=[[3], [1]])
+                c = binary_einsum(a, b; contracting_dims=[[2], [3]], batching_dims=[[3], [1]])
+                @test c ≈ fill(T(3.0), 4, 2, 5)
             end
         end
     end
