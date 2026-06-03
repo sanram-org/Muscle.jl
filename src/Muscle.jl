@@ -1,7 +1,5 @@
 module Muscle
 
-using Compat
-
 include("Utils.jl")
 include("Backend.jl")
 include("Operations.jl")
