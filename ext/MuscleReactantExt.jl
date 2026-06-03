@@ -85,12 +85,6 @@ end
     return Tensor{T_traced,N,A_traced}
 end
 
-# function Muscle.unary_einsum(
-#     ::BackendReactant, @nospecialize(a::Tensor{TracedRNumber{T}}); dims=nonunique(inds(a)), out=nothing
-# ) where {T}
-#     error("compilation of `Muscle.unary_einsum` is not yet supported")
-# end
-
 @nospecializeinfer function Muscle.binary_einsum(::BackendReactant, @nospecialize(a::AbstractArray), @nospecialize(b::AbstractArray); contracting_dims, batching_dims)
     if !use_overlayed_version(a)
         a = @opcall constant(a)
