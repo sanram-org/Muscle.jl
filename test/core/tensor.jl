@@ -373,7 +373,7 @@ end
         b = adjoint(a)
 
         @test isempty(variance(b))
-        @test isapprox(parent(b), 1.0 - 1.0im)
+        @test isapprox(parent(b)[], 1.0 - 1.0im)
     end
 
     @testset "Vector" begin
