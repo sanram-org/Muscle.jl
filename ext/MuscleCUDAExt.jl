@@ -15,7 +15,13 @@ end
 @nospecializeinfer Muscle.platform(@nospecialize(::CuArray)) = Muscle.PlatformCUDA()
 
 ## `CUDA` (uses cuTENSOR)
-@nospecializeinfer function Muscle.binary_einsum(::BackendCuTENSOR, @nospecializeinfer(a::AbstractArray), @nospecialize(b::AbstractArray); contracting_dims, batching_dims)
+@nospecializeinfer function Muscle.binary_einsum(
+    ::BackendCuTENSOR,
+    @nospecializeinfer(a::AbstractArray),
+    @nospecialize(b::AbstractArray);
+    contracting_dims,
+    batching_dims,
+)
     inner_dims_a, inner_dims_b = contracting_dims
     batch_dims_a, batch_dims_b = batching_dims
     outer_dims_a = Int[i for i in 1:ndims(a) if i ∉ inner_dims_a && i ∉ batch_dims_a]
@@ -23,7 +29,7 @@ end
     size_c = vcat(
         Int[size(a, i) for i in batch_dims_a],
         Int[size(a, i) for i in outer_dims_a],
-        Int[size(b, i) for i in outer_dims_b]
+        Int[size(b, i) for i in outer_dims_b],
     )
 
     T = Base.promote_eltype(a, b)
@@ -32,7 +38,14 @@ end
     return c
 end
 
-@nospecializeinfer function Muscle.binary_einsum!(::BackendCuTENSOR, @nospecialize(c::AbstractArray), @nospecialize(a::AbstractArray), @nospecialize(b::AbstractArray); contracting_dims, batching_dims)
+@nospecializeinfer function Muscle.binary_einsum!(
+    ::BackendCuTENSOR,
+    @nospecialize(c::AbstractArray),
+    @nospecialize(a::AbstractArray),
+    @nospecialize(b::AbstractArray);
+    contracting_dims,
+    batching_dims,
+)
     inner_dims_a, inner_dims_b = contracting_dims
     batch_dims_a, batch_dims_b = batching_dims
     outer_dims_a = Int[i for i in 1:ndims(a) if i ∉ inner_dims_a && i ∉ batch_dims_a]
@@ -40,7 +53,7 @@ end
 
     modes_a = collect(1:ndims(a))
     modes_b = ndims(a) .+ (1:ndims(b))
-    
+
     n = ndims(a) + ndims(b) + 1
     for (ai, bi) in zip(inner_dims_a, inner_dims_b)
         modes_a[ai] = modes_b[bi] = n

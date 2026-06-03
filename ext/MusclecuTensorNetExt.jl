@@ -79,18 +79,7 @@ function simple_update(
 
     # TODO use svd_info
     _, _, _, svd_info = cuTensorNet.gateSplit!(
-        a,
-        modes_a,
-        b,
-        modes_b,
-        g,
-        modes_g,
-        u,
-        modes_u,
-        s,
-        vt,
-        modes_v;
-        svd_config,
+        a, modes_a, b, modes_b, g, modes_g, u, modes_u, s, vt, modes_v; svd_config
     )
 
     if absorb isa DontAbsorb

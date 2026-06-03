@@ -3,7 +3,15 @@ module MuscleReactantExt
 using Muscle
 using Muscle: BackendReactant
 using Reactant
-using Reactant: @opcall, use_overlayed_version, TracedRNumber, TracedRArray, ConcreteRNumber, ConcreteRArray, AnyTracedRArray, AnyConcreteRArray
+using Reactant:
+    @opcall,
+    use_overlayed_version,
+    TracedRNumber,
+    TracedRArray,
+    ConcreteRNumber,
+    ConcreteRArray,
+    AnyTracedRArray,
+    AnyConcreteRArray
 using Reactant.TracedUtils: set_mlir_data!, get_mlir_data
 using PrecompileTools
 using LinearAlgebra
@@ -12,11 +20,7 @@ using Base: @nospecializeinfer
 function __init__()
     Muscle.register_backend!(BackendReactant())
 
-    for op in [
-        Muscle.binary_einsum,
-        Muscle.binary_einsum!,
-        Muscle.tensor_svd,
-    ]
+    for op in [Muscle.binary_einsum, Muscle.binary_einsum!, Muscle.tensor_svd]
         Muscle.Operations.register_backend_for_op!(op, BackendReactant())
     end
 
@@ -83,7 +87,9 @@ end
     return Tensor{T_traced,N,A_traced}
 end
 
-@nospecializeinfer function Muscle.binary_einsum(::BackendReactant, @nospecialize(a::AbstractArray), @nospecialize(b::AbstractArray); contracting_dims, batching_dims)
+@nospecializeinfer function Muscle.binary_einsum(
+    ::BackendReactant, @nospecialize(a::AbstractArray), @nospecialize(b::AbstractArray); contracting_dims, batching_dims
+)
     if !use_overlayed_version(a)
         a = @opcall constant(a)
     end
@@ -104,7 +110,12 @@ end
 end
 
 @nospecializeinfer function Muscle.binary_einsum!(
-    ::BackendReactant, @nospecialize(c::AbstractArray), @nospecialize(a::AbstractArray), @nospecialize(b::AbstractArray); contracting_dims, batching_dims
+    ::BackendReactant,
+    @nospecialize(c::AbstractArray),
+    @nospecialize(a::AbstractArray),
+    @nospecialize(b::AbstractArray);
+    contracting_dims,
+    batching_dims,
 )
     _c = Muscle.binary_einsum(BackendReactant(), a, b; contracting_dims, batching_dims)
     set_mlir_data!(c, get_mlir_data(_c))
@@ -112,9 +123,7 @@ end
 end
 
 # TODO batching dimensions?
-@nospecializeinfer function Muscle.tensor_svd(
-    ::BackendReactant, @nospecialize(a::AbstractArray); dims, kwargs...
-)
+@nospecializeinfer function Muscle.tensor_svd(::BackendReactant, @nospecialize(a::AbstractArray); dims, kwargs...)
     inds_u, inds_v = dims
 
     # permute array
@@ -124,7 +133,7 @@ end
     a_mat = reshape(parent(a_mat), prod(left_sizes), prod(right_sizes))
 
     a_mat = Reactant.materialize_traced_array(a_mat)
-    
+
     # error on `cusolver_gesvd`: The GPU implementation of gesvd requires that the input matrix be m x n with m >= n
     # TODO update once fixed in Enzyme-JAX
     apply_fix_for_cusolver_gesvd = get(kwargs, :algorithm, "DEFAULT") == "QRIteration" && size(data, 1) < size(data, 2)
@@ -136,7 +145,7 @@ end
     U, s, Vt, _ = @opcall svd(data; full=false, kwargs...)
 
     if apply_fix_for_cusolver_gesvd
-        U, Vt = @opcall(transpose(Vt, [2,1])), @opcall(transpose(U, [2,1])) # modify if batching dims
+        U, Vt = @opcall(transpose(Vt, [2, 1])), @opcall(transpose(U, [2, 1])) # modify if batching dims
     end
 
     # tensorify results

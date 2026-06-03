@@ -11,15 +11,21 @@ function __init__()
     Muscle.Operations.register_backend_for_op!(Muscle.Operations.binary_einsum!, BackendOMEinsum())
 end
 
-@nospecializeinfer function Muscle.binary_einsum(::Muscle.BackendOMEinsum, @nospecialize(a::AbstractArray), @nospecialize(b::AbstractArray); contracting_dims, batching_dims)
+@nospecializeinfer function Muscle.binary_einsum(
+    ::Muscle.BackendOMEinsum,
+    @nospecialize(a::AbstractArray),
+    @nospecialize(b::AbstractArray);
+    contracting_dims,
+    batching_dims,
+)
     inner_dims_a, inner_dims_b = contracting_dims
     batch_dims_a, batch_dims_b = batching_dims
     outer_dims_a = filter(d -> d ∉ inner_dims_a && d ∉ batch_dims_a, 1:ndims(a))
     outer_dims_b = filter(d -> d ∉ inner_dims_b && d ∉ batch_dims_b, 1:ndims(b))
 
     csize = Int[
-        Int[size(a, d) for d in batch_dims_a];
-        Int[size(a, d) for d in outer_dims_a];
+        Int[size(a, d) for d in batch_dims_a]
+        Int[size(a, d) for d in outer_dims_a]
         Int[size(b, d) for d in outer_dims_b]
     ]
 
@@ -28,7 +34,14 @@ end
     return c
 end
 
-@nospecializeinfer function Muscle.binary_einsum!(::Muscle.BackendOMEinsum, @nospecialize(c::AbstractArray), @nospecialize(a::AbstractArray), @nospecialize(b::AbstractArray); contracting_dims, batching_dims)
+@nospecializeinfer function Muscle.binary_einsum!(
+    ::Muscle.BackendOMEinsum,
+    @nospecialize(c::AbstractArray),
+    @nospecialize(a::AbstractArray),
+    @nospecialize(b::AbstractArray);
+    contracting_dims,
+    batching_dims,
+)
     inner_dims_a, inner_dims_b = contracting_dims
     batch_dims_a, batch_dims_b = batching_dims
     outer_dims_a = filter(d -> d ∉ inner_dims_a && d ∉ batch_dims_a, 1:ndims(a))
@@ -44,7 +57,7 @@ end
     inds_a = map(1:ndims(a)) do d
         i = findfirst(==(d), inner_dims_a)
         !isnothing(i) && return inner_inds[i]
-        
+
         i = findfirst(==(d), batch_dims_a)
         !isnothing(i) && return batch_inds[i]
 
@@ -55,7 +68,7 @@ end
     inds_b = map(1:ndims(b)) do d
         i = findfirst(==(d), inner_dims_b)
         !isnothing(i) && return inner_inds[i]
-        
+
         i = findfirst(==(d), batch_dims_b)
         !isnothing(i) && return batch_inds[i]
 
@@ -64,7 +77,7 @@ end
     end::Vector{Int}
 
     inds_c = Int[batch_inds; outer_inds_a; outer_inds_b]
-    
+
     OMEinsum.einsum!((inds_a, inds_b), inds_c, (a, b), c, true, false)
     return c
 end

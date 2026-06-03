@@ -12,7 +12,9 @@ function __init__()
     Muscle.Operations.register_backend_for_op!(Muscle.Operations.binary_einsum!, BackendStrided())
 end
 
-@nospecializeinfer function Muscle.binary_einsum(::BackendStrided, @nospecialize(a::AbstractArray), @nospecialize(b::AbstractArray); contracting_dims, batching_dims)
+@nospecializeinfer function Muscle.binary_einsum(
+    ::BackendStrided, @nospecialize(a::AbstractArray), @nospecialize(b::AbstractArray); contracting_dims, batching_dims
+)
     return binary_einsum(
         BackendStrided(),
         arraytype(a) isa StridedView ? a : StridedView(a),

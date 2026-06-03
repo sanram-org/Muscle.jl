@@ -16,6 +16,8 @@ VectorInterface.add!(y::Tensor, x::Tensor) = y .= y + x
 VectorInterface.add!(y::Tensor, x::Tensor, α::Number) = y .= y + α * x
 VectorInterface.add!(y::Tensor, x::Tensor, α::Number, β::Number) = y .= y * β + α * x
 
-VectorInterface.inner(x::Tensor, y::Tensor) = binary_einsum(x, y; contracting_dims=[collect(1:ndims(x)), collect(1:ndims(y))])
+function VectorInterface.inner(x::Tensor, y::Tensor)
+    binary_einsum(x, y; contracting_dims=[collect(1:ndims(x)), collect(1:ndims(y))])
+end
 
 end

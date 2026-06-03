@@ -3,7 +3,9 @@ using Dagger: Dagger, ArrayOp, Context, ArrayDomain, EagerThunk, DArray
 using LinearAlgebra
 using Base: @nospecializeinfer
 
-@nospecializeinfer function Muscle.binary_einsum(::Muscle.BackendDagger, @nospecialize(a::AbstractArray), @nospecialize(b::AbstractArray))
+@nospecializeinfer function Muscle.binary_einsum(
+    ::Muscle.BackendDagger, @nospecialize(a::AbstractArray), @nospecialize(b::AbstractArray)
+)
     op = BinaryEinsum(a, b, contracting_dims, batching_dims)
     return Dagger._to_darray(op)
 end
@@ -22,7 +24,7 @@ struct BinaryEinsum{T,N} <: ArrayOp{T,N}
         N = ndims(a) - length(inner_dims_a) + ndims(b) - length(inner_dims_b) - length(batch_dims_b)
         da = Dagger._to_darray(a)
         db = Dagger._to_darray(b)
-        return new{T, N}(da, db, contracting_dims, batching_dims)
+        return new{T,N}(da, db, contracting_dims, batching_dims)
     end
 end
 
@@ -30,22 +32,26 @@ function Base.size(@nospecialize(x::BinaryEinsum))
     inner_dims_a, inner_dims_b = x.contracting_dims
     batch_dims_a, batch_dims_b = x.batching_dims
 
-    return Tuple(vcat(
-        Int[size(x.a, i) for i in batch_dims_a],
-        Int[size(x.a, i) for i in 1:ndims(x.a) if i ∉ inner_dims_a && i ∉ batch_dims_a],
-        Int[size(x.b, i) for i in 1:ndims(x.b) if i ∉ inner_dims_b && i ∉ batch_dims_b],
-    ))
+    return Tuple(
+        vcat(
+            Int[size(x.a, i) for i in batch_dims_a],
+            Int[size(x.a, i) for i in 1:ndims(x.a) if i ∉ inner_dims_a && i ∉ batch_dims_a],
+            Int[size(x.b, i) for i in 1:ndims(x.b) if i ∉ inner_dims_b && i ∉ batch_dims_b],
+        ),
+    )
 end
 
 function Dagger.Blocks(@nospecialize(x::BinaryEinsum))
     inner_dims_a, inner_dims_b = x.contracting_dims
     batch_dims_a, batch_dims_b = x.batching_dims
 
-    return Dagger.Blocks(vcat(
-        Int[x.a.partitioning.blocksize[i] for i in batch_dims_a],
-        Int[x.a.partitioning.blocksize[i] for i in 1:ndims(x.a) if i ∉ inner_dims_a && i ∉ batch_dims_a],
-        Int[x.b.partitioning.blocksize[i] for i in 1:ndims(x.b) if i ∉ inner_dims_b && i ∉ batch_dims_b],
-    ))
+    return Dagger.Blocks(
+        vcat(
+            Int[x.a.partitioning.blocksize[i] for i in batch_dims_a],
+            Int[x.a.partitioning.blocksize[i] for i in 1:ndims(x.a) if i ∉ inner_dims_a && i ∉ batch_dims_a],
+            Int[x.b.partitioning.blocksize[i] for i in 1:ndims(x.b) if i ∉ inner_dims_b && i ∉ batch_dims_b],
+        ),
+    )
 end
 
 function Dagger.stage(::Context, op::BinaryEinsum{T,N}) where {T,N}
@@ -77,7 +83,7 @@ function Dagger.stage(::Context, op::BinaryEinsum{T,N}) where {T,N}
     for indices in eachindex(IndexCartesian(), chunks)
         outer_chunk_inds_a = Tuple(indices)[mask_a]
         outer_chunk_inds_b = Tuple(indices)[mask_b]
-        
+
         chunks[indices] = Dagger.treereduce(
             Dagger.AddComputeOp,
             map(Iterators.product([1:size(Dagger.chunks(op.a), i) for i in inner_dims_a]...)) do inner_chunk_inds_a
