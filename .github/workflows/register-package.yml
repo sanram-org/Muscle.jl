@@ -1,0 +1,17 @@
+name: Register Package
+
+on:
+  workflow_dispatch:
+
+jobs:
+  register:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: julia-actions/setup-julia@v3
+      - uses: julia-actions/cache@v3
+      - uses: julia-actions/register-pkg-in-registry@v0.4
+        with:
+          registry: mofeing/Registry
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
