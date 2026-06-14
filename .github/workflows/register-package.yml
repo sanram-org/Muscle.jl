@@ -1,8 +1,6 @@
 name: Register Package
-
 on:
   workflow_dispatch:
-
 jobs:
   register:
     runs-on: ubuntu-latest
@@ -12,6 +10,6 @@ jobs:
       - uses: julia-actions/cache@v3
       - uses: julia-actions/register-pkg-in-registry@v0.4
         with:
-          registry: mofeing/Registry
+          registry: sanram-org/Registry
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.REGISTRATOR_TOKEN }}
