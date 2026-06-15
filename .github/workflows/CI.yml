@@ -58,6 +58,7 @@ jobs:
           using Pkg
           pkg"registry add https://github.com/sanram-org/Registry.git"
           pkg"registry add General"
+        shell: julia --color=yes {0}
       - uses: julia-actions/julia-runtest@v1
         with:
           test_args: 'core integration'
