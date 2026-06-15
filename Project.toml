@@ -1,6 +1,6 @@
 name = "Muscle"
 uuid = "21fe5c4b-a943-414d-bf3e-516f24900631"
-version = "0.4.0"
+version = "0.4.1"
 authors = ["Sergio Sánchez Ramírez and contributors"]
 
 [workspace]
