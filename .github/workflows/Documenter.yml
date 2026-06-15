@@ -30,7 +30,7 @@ jobs:
       - name: Add Julia registries
         run: |
           using Pkg
-          pkg"registry add https://github.com/bsc-quantic/Registry.git"
+          pkg"registry add https://github.com/sanram-org/Registry.git"
           pkg"registry add General"
         shell: julia {0}
       - name: Install dependencies
@@ -39,4 +39,3 @@ jobs:
         run: julia --color=yes --project=docs docs/make.jl
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
