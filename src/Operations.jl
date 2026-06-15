@@ -281,15 +281,14 @@ end
         push!(dims_outer_a, j)
     end
 
-    # Main.@infiltrate
     for i in 1:ndims(b)
         i == dim_physical_b && continue
         i == dim_bond_b && continue
-        j = i + ndims(a) - 2
+        j = i + length(dims_outer_a)
         if i > dim_physical_b
             j -= 1
         end
-        if i > dim_bond_a
+        if i > dim_bond_b
             j -= 1
         end
         push!(dims_outer_b, j)
