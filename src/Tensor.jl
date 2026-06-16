@@ -486,7 +486,7 @@ Perform a binary tensor contraction operation.
 """
 function einsum(a::Tensor, b::Tensor; dims)
     # check for compatible variance
-    # TODO variate if required
+    # TODO variate as required
     for (ai, bi) in zip(dims[1], dims[2])
         var_a_i = variance(a, ai)
         var_b_i = variance(b, bi)
@@ -515,18 +515,20 @@ function einsum!(c::Tensor, a::Tensor, b::Tensor; dims)
         end
     end
     binary_einsum!(parent(c), parent(a), parent(b); contracting_dims=dims)
-    # TODO fix variance of c
     return c
 end
 
-# TODO return as Tensors
 """
     tensor_qr(A::Tensor; dims, kwargs...)
 
 Perform QR factorization on a tensor. `dims` should be of the form `(dims_q, dims_r)` or just `(dims_q...,)`.
 If `dims=nothing`, then [`Covariant`](@ref) and [`Contravariant`] dimensions will be used as left- and right-dimensions.
 """
-tensor_qr(a::Tensor; dims=factordims(a), kwargs...) = tensor_qr(parent(a); dims, kwargs...)
+function tensor_qr(a::Tensor; dims=factordims(a), kwargs...)
+    # TODO variate as required
+    q, r = tensor_qr(parent(a); dims, kwargs...)
+    return Tensor(q), Tensor(r)
+end
 LinearAlgebra.qr(a::Tensor; kwargs...) = tensor_qr(a; kwargs...)
 
 """
@@ -539,10 +541,13 @@ Perform SVD factorization on a tensor.
   - `inplace`: If `true`, it will use `A` as workspace variable to save space. Defaults to `false`.
   - `kwargs...`: additional keyword arguments to be passed to `LinearAlgebra.svd`.
 """
-tensor_svd(a::Tensor; dims=factordims(a), kwargs...) = tensor_svd(parent(a); dims, kwargs...)
+function tensor_svd(a::Tensor; dims=factordims(a), kwargs...)
+    # TODO variate as required
+    u, s, vt = tensor_svd(parent(a); dims, kwargs...)
+    return Tensor(u), Tensor(s), Tensor(vt)
+end
 LinearAlgebra.svd(a::Tensor; kwargs...) = tensor_svd(a; kwargs...)
 
-# TODO return as Tensors
 """
     Muscle.tensor_eigen(tensor::Tensor; dims, kwargs...)
 
@@ -553,13 +558,16 @@ Perform eigen factorization on a tensor.
   - `inplace`: If `true`, it will use `A` as workspace variable to save space. Defaults to `false`.
   - `kwargs...`: additional keyword arguments to be passed to `LinearAlgebra.eigen`.
 """
-tensor_eigen(a::Tensor; dims=factordims(a), kwargs...) = tensor_eigen(parent(a); dims, kwargs...)
+function tensor_eigen(a::Tensor; dims=factordims(a), kwargs...)
+    # TODO variate as required
+    λ, U = tensor_eigen(parent(a); dims, kwargs...)
+    return Tensor(λ), Tensor(U)
+end
 LinearAlgebra.eigen(a::Tensor; kwargs...) = tensor_eigen(a; kwargs...)
 
-# TODO return as Tensors
+# TODO variate as required
 function simple_update(a::Tensor, b::Tensor, g::Tensor; physical_dims, bond_dims, kwargs...)
-    # TODO variate if required
-    return simple_update(
+    F = simple_update(
         parent(a),
         parent(b),
         parent(g);
@@ -569,4 +577,12 @@ function simple_update(a::Tensor, b::Tensor, g::Tensor; physical_dims, bond_dims
         dim_bond_b=bond_dims[2],
         kwargs...,
     )
+
+    if get(kwargs, :absorb, DontAbsorb)
+        new_a, s, new_b = F
+        return Tensor(new_a), Tensor(s), Tensor(new_b)
+    end
+
+    new_a, new_b = F
+    return Tensor(new_a), Tensor(new_b)
 end
