@@ -578,7 +578,7 @@ function simple_update(a::Tensor, b::Tensor, g::Tensor; physical_dims, bond_dims
         kwargs...,
     )
 
-    if get(kwargs, :absorb, DontAbsorb)
+    if get(kwargs, :absorb, DontAbsorb) == DontAbsorb
         new_a, s, new_b = F
         return Tensor(new_a), Tensor(s), Tensor(new_b)
     end
