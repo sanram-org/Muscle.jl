@@ -414,9 +414,9 @@ function Base._mapreduce_dim(f, op, init, tensor::Tensor, dims)
 end
 
 # fix for ambiguity
-# function Base._mapreduce_dim(f, op, init::Base._InitialValue, t::Tensor, c::Colon)
-#     Base._mapreduce_dim(f, op, init, parent(t), c)
-# end
+function Base._mapreduce_dim(f, op, init::Base._InitialValue, t::Tensor, c::Colon)
+    Base._mapreduce_dim(f, op, init, parent(t), c)
+end
 
 Base._sum(x::Tensor, dims; kwargs...) = Tensor(Base._sum(parent(x), dims; kwargs...), variance(x))
 Base._sum(x::Tensor, ::Colon; kwargs...) = Tensor(sum(parent(x); kwargs...))
