@@ -279,14 +279,12 @@ Base.view(t::Tensor, ::Colon) = Tensor(view(parent(t), Colon()), [Invariant])
 Base.view(t::Tensor, i...) = view(t, i)
 Base.view(t::Tensor, kv::Pair...) = view(t, _getindex_canonical_keys(t, kv))
 
-# NOTE: `conj` is automatically managed because `Tensor` inherits from `AbstractArray`,
-# but there is a bug when calling `conj` on `Tensor{T,0}` which makes it return a `Tensor{Tensor{Complex, 0}, 0}`
 """
     Base.conj(::Tensor)
 
 Return the conjugate of the tensor.
 """
-Base.conj(x::Tensor{<:Complex,0}) = Tensor(conj(parent(x)), Variance[])
+Base.conj(x::Tensor) = Tensor(conj(parent(x)), copy(variance(x)))
 
 """
     Base.adjoint(::Tensor)
@@ -514,6 +512,12 @@ function einsum(a::Tensor, b::Tensor; dims, batch=((), ()))
             throw(ArgumentError("batching dims $ai ($(variance(a, ai))) and $bi ($(variance(b, bi))) must be equal"))
         end
     end
+
+    if ndims(b) == 0
+        c = parent(a) .* parent(b)
+        return Tensor(c, copy(variance(a)))
+    end
+
     c = binary_einsum(parent(a), parent(b); contracting_dims=dims, batching_dims=batch)
     vars_batch = Variance[variance(a, i) for i in batch[1]]
     vars_a = Variance[variance(a, i) for i in 1:ndims(a) if i ∉ dims[1]]
@@ -544,6 +548,12 @@ function einsum!(c::Tensor, a::Tensor, b::Tensor; dims, batch=((), ()))
             )
         end
     end
+
+    if ndims(b) == 0
+        parent(c) .= parent(a) .* parent(b)
+        return 0
+    end
+
     binary_einsum!(parent(c), parent(a), parent(b); contracting_dims=dims)
     return c
 end
