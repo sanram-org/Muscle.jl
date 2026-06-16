@@ -382,23 +382,13 @@ end
     if absorb isa DontAbsorb
         return u, s, vt
     elseif absorb isa AbsorbU
-        shape = ones(Int, ndims(u))
-        shape[dim_bond_a] = length(s)
-        u = u .* reshape(s, Tuple(shape))
+        hadamard!(u, s; dims=([dim_bond_a],[1]))
     elseif absorb isa AbsorbV
-        shape = ones(Int, ndims(vt))
-        shape[dim_bond_b] = length(s)
-        vt = vt .* reshape(s, Tuple(shape))
+        hadamard!(vt, s; dims=([dim_bond_b],[1]))
     elseif absorb isa AbsorbEqually
         s_sqrt = sqrt.(s)
-
-        shape = ones(Int, ndims(u))
-        shape[dim_bond_a] = length(s)
-        u = u .* reshape(s_sqrt, Tuple(shape))
-
-        shape = ones(Int, ndims(vt))
-        shape[dim_bond_b] = length(s)
-        vt = vt .* reshape(s_sqrt, Tuple(shape))
+        hadamard!(u, s_sqrt; dims=([dim_bond_a],[1]))
+        hadamard!(vt, s_sqrt; dims=([dim_bond_b],[1]))
     end
 
     return u, vt
