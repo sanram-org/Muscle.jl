@@ -476,17 +476,44 @@ function factordims(a::AbstractArray, dims::Base.AbstractVecOrTuple{Base.Abstrac
 end
 
 """
-    einsum(a::Tensor, b::Tensor; dims::NTuple{2,Tuple})
+    einsum(a::Tensor, b::Tensor; dims::NTuple{2,Tuple}, batch::NTuple{2,Tuple}=((),()))
 
 Perform a binary tensor contraction operation.
 
 # Keyword arguments
 
-    - `dims`: indices to contract over. Defaults to the set intersection of the indices of `a` and `b`.
+    - `dims`: dimensions to contract over.
+    - `batch`: dimensions to batch over. Defaults to none.
 """
-function einsum(a::Tensor, b::Tensor; dims)
+function einsum(a::Tensor, b::Tensor; dims, batch=((),()))
     # check for compatible variance
     # TODO variate as required
+    for (ai, bi) in zip(dims[1], dims[2])
+        var_a_i = variance(a, ai)
+        var_b_i = variance(b, bi)
+        if !check_compatible_variance(var_a_i, var_b_i)
+            throw(ArgumentError("contracting dims $ai ($var_a_i) and $bi ($var_b_i) have incompatible variance"))
+        end
+    end
+    for (ai, bi) in zip(batch[1], batch[2])
+        if variance(a, ai) != variance(b, bi)
+            throw(ArgumentError("batching dims $ai ($(variance(a, ai))) and $bi ($(variance(b, bi))) must be equal"))
+        end
+    end
+    c = binary_einsum(parent(a), parent(b); contracting_dims=dims, batching_dims=batch)
+    vars_batch = Variance[variance(a, i) for i in batch[1]]
+    vars_a = Variance[variance(a, i) for i in 1:ndims(a) if i ∉ dims[1]]
+    vars_b = Variance[variance(b, i) for i in 1:ndims(b) if i ∉ dims[2]]
+    return Tensor(c, Variance[vars_batch; vars_a; vars_b])
+end
+
+"""
+    einsum!(c::Tensor, a::Tensor, b::Tensor; dims::NTuple{2,Tuple})
+
+Perform a binary tensor contraction operation between `a` and `b` and store the result in `c`.
+"""
+function einsum!(c::Tensor, a::Tensor, b::Tensor; dims, batch=((),()))
+    # TODO variate if required
     for (ai, bi) in zip(dims[1], dims[2])
         var_a_i = variance(a, ai)
         var_b_i = variance(b, bi)
@@ -494,24 +521,9 @@ function einsum(a::Tensor, b::Tensor; dims)
             throw(ArgumentError("index $ai ($var_a_i) and $bi ($var_b_i) have incompatible variance"))
         end
     end
-    c = binary_einsum(parent(a), parent(b); contracting_dims=dims)
-    vars_a = Variance[variance(a, i) for i in 1:ndims(a) if i ∉ dims[1]]
-    vars_b = Variance[variance(b, i) for i in 1:ndims(b) if i ∉ dims[2]]
-    return Tensor(c, Variance[vars_a; vars_b])
-end
-
-"""
-    einsum!(c::Tensor, a::Tensor, b::Tensor)
-
-Perform a binary tensor contraction operation between `a` and `b` and store the result in `c`.
-"""
-function einsum!(c::Tensor, a::Tensor, b::Tensor; dims)
-    # TODO variate if required
-    for (ai, bi) in zip(dims[1], dims[2])
-        var_a_i = variance(a, ai)
-        var_b_i = variance(b, bi)
-        if !check_compatible_variance(var_a_i, var_b_i)
-            throw(ArgumentError("index $ai ($var_a_i) and $bi ($var_b_i) have incompatible variance"))
+    for (ci, (ai, bi)) in enumerate(zip(batch[1], batch[2]))
+        if variance(a, ai) != variance(b, bi) && variance(c, ci)
+            throw(ArgumentError("batching dims $ai ($(variance(a, ai))), $bi ($(variance(b, bi))) and $ci ($(variance(c, ci))) must be equal"))
         end
     end
     binary_einsum!(parent(c), parent(a), parent(b); contracting_dims=dims)
