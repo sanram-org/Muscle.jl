@@ -499,7 +499,7 @@ Perform a binary tensor contraction operation.
     - `dims`: dimensions to contract over.
     - `batch`: dimensions to batch over. Defaults to none.
 """
-function einsum(a::Tensor, b::Tensor; dims, batch=((),()))
+function einsum(a::Tensor, b::Tensor; dims, batch=((), ()))
     # check for compatible variance
     # TODO variate as required
     for (ai, bi) in zip(dims[1], dims[2])
@@ -526,7 +526,7 @@ end
 
 Perform a binary tensor contraction operation between `a` and `b` and store the result in `c`.
 """
-function einsum!(c::Tensor, a::Tensor, b::Tensor; dims, batch=((),()))
+function einsum!(c::Tensor, a::Tensor, b::Tensor; dims, batch=((), ()))
     # TODO variate if required
     for (ai, bi) in zip(dims[1], dims[2])
         var_a_i = variance(a, ai)
@@ -537,7 +537,11 @@ function einsum!(c::Tensor, a::Tensor, b::Tensor; dims, batch=((),()))
     end
     for (ci, (ai, bi)) in enumerate(zip(batch[1], batch[2]))
         if variance(a, ai) != variance(b, bi) && variance(c, ci)
-            throw(ArgumentError("batching dims $ai ($(variance(a, ai))), $bi ($(variance(b, bi))) and $ci ($(variance(c, ci))) must be equal"))
+            throw(
+                ArgumentError(
+                    "batching dims $ai ($(variance(a, ai))), $bi ($(variance(b, bi))) and $ci ($(variance(c, ci))) must be equal",
+                ),
+            )
         end
     end
     binary_einsum!(parent(c), parent(a), parent(b); contracting_dims=dims)

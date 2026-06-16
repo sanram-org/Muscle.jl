@@ -6,12 +6,12 @@ using Muscle: hadamard, hadamard!
     a = Tensor(ones(2, 3, 4))
     b = Tensor(fill(2.0))
 
-    let c = hadamard(a, b; dims=((),()))
+    let c = hadamard(a, b; dims=((), ()))
         @test parent(c) ≈ 2.0 .* ones(size(a)...)
     end
 
     let a = copy(a)
-        c = hadamard!(a, b; dims=((),()))
+        c = hadamard!(a, b; dims=((), ()))
         @test c === a
         @test parent(a) ≈ 2.0 .* ones(size(a)...)
     end
@@ -76,7 +76,7 @@ end
     a = Tensor(ones(2, 3, 4))
     b = Tensor(Float64[1 2 3; 4 5 6])
 
-    let c = hadamard(a, b; dims=[[1,2], [1,2]])
+    let c = hadamard(a, b; dims=[[1, 2], [1, 2]])
         @test size(c) == (2, 3, 4)
 
         for coord in eachindex(IndexCartesian(), b)
@@ -86,7 +86,7 @@ end
     end
 
     let a = copy(a)
-        c = hadamard!(a, b; dims=[[1,2], [1,2]])
+        c = hadamard!(a, b; dims=[[1, 2], [1, 2]])
         @test c === a
 
         for coord in eachindex(IndexCartesian(), b)
@@ -100,13 +100,13 @@ end
     a = Tensor(ones(2, 3, 4))
     b = Tensor(2ones(2, 3, 4))
 
-    let c = hadamard(a, b; dims=[[1,2,3], [1,2,3]])
+    let c = hadamard(a, b; dims=[[1, 2, 3], [1, 2, 3]])
         @test size(c) == (2, 3, 4)
         @test all(c .≈ 2.0)
     end
 
     let a = copy(a)
-        c = hadamard!(a, b; dims=[[1,2,3], [1,2,3]])
+        c = hadamard!(a, b; dims=[[1, 2, 3], [1, 2, 3]])
         @test c === a
         @test all(a .≈ 2.0)
     end

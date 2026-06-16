@@ -1,6 +1,8 @@
 using Base: @nospecializeinfer
 
-@nospecializeinfer function check_hadamard(@nospecialize(c::AbstractArray), @nospecialize(a::AbstractArray), @nospecialize(dims))
+@nospecializeinfer function check_hadamard(
+    @nospecialize(c::AbstractArray), @nospecialize(a::AbstractArray), @nospecialize(dims)
+)
     # `b` must be broadcastable to `a`
     @assert ndims(c) >= ndims(a) "`a` must be broadcastable to `c`"
     @assert length(dims) == 2
@@ -382,13 +384,13 @@ end
     if absorb isa DontAbsorb
         return u, s, vt
     elseif absorb isa AbsorbU
-        hadamard!(u, s; dims=([dim_bond_a],[1]))
+        hadamard!(u, s; dims=([dim_bond_a], [1]))
     elseif absorb isa AbsorbV
-        hadamard!(vt, s; dims=([dim_bond_b],[1]))
+        hadamard!(vt, s; dims=([dim_bond_b], [1]))
     elseif absorb isa AbsorbEqually
         s_sqrt = sqrt.(s)
-        hadamard!(u, s_sqrt; dims=([dim_bond_a],[1]))
-        hadamard!(vt, s_sqrt; dims=([dim_bond_b],[1]))
+        hadamard!(u, s_sqrt; dims=([dim_bond_a], [1]))
+        hadamard!(vt, s_sqrt; dims=([dim_bond_b], [1]))
     end
 
     return u, vt
