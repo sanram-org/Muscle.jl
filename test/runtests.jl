@@ -8,6 +8,7 @@ if "core" in target_testsets
     @testset "Unit" verbose = true begin
         @testset "Variance" include("core/variance.jl")
         @testset "Operations" verbose = true begin
+            @testset "hadamard" include("core/operations/hadamard.jl")
             @testset "binary_einsum" include("core/operations/binary_einsum.jl")
             @testset "tensor_qr" include("core/operations/tensor_qr.jl")
             @testset "tensor_svd" include("core/operations/tensor_svd.jl")

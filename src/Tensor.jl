@@ -475,6 +475,20 @@ function factordims(a::AbstractArray, dims::Base.AbstractVecOrTuple{Base.Abstrac
     return dims
 end
 
+function hadamard(a::Tensor, b::Tensor; dims=(1:ndims(a), 1:ndims(b)))
+    # `b` must be broadcastable to `a`
+    ndims(a) >= ndims(b) || return hadamard(b, a; dims)
+    return hadamard!(copy(a), b; dims)
+end
+
+function hadamard!(c::Tensor, a::Tensor; dims=(1:ndims(c), 1:ndims(a)))
+    for (ci, ai) in zip(dims[1], dims[2])
+        @assert variance(c, ci) == variance(a, ai) "dimensions $ci ($(variance(c, ci))) of `c` and $ai of `a` ($(variance(a, ai))) must have equal variance"
+    end
+    hadamard!(parent(c), parent(a); dims)
+    return c
+end
+
 """
     einsum(a::Tensor, b::Tensor; dims::NTuple{2,Tuple}, batch::NTuple{2,Tuple}=((),()))
 

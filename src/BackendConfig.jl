@@ -35,6 +35,7 @@ Base.@nospecializeinfer function available_backends(@nospecialize(op::Function),
 end
 
 const AVAILABLE_BACKENDS_FOR_OP = Dict{Function,Vector{Backend}}([
+    hadamard! => Backend[BackendBase()],
     binary_einsum => Backend[BackendBase()],
     binary_einsum! => Backend[BackendBase()],
     tensor_qr => Backend[BackendBase()],
@@ -45,6 +46,11 @@ const AVAILABLE_BACKENDS_FOR_OP = Dict{Function,Vector{Backend}}([
 ])
 
 const DEFAULT_BACKEND = Dict{Tuple{Function,Platform},Backend}([
+    # hadamard!
+    (hadamard!, PlatformHost()) => BackendBase(),
+    (hadamard!, PlatformCUDA()) => BackendBase(),
+    (hadamard!, PlatformReactant()) => BackendBase(),
+
     # binary_einsum
     (binary_einsum, PlatformHost()) => BackendBase(),
     (binary_einsum!, PlatformHost()) => BackendBase(),

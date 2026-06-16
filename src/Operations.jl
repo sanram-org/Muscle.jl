@@ -1,5 +1,56 @@
 using Base: @nospecializeinfer
 
+@nospecializeinfer function check_hadamard(@nospecialize(c::AbstractArray), @nospecialize(a::AbstractArray), @nospecialize(dims))
+    # `b` must be broadcastable to `a`
+    @assert ndims(c) >= ndims(a) "`a` must be broadcastable to `c`"
+    @assert length(dims) == 2
+    @assert length(dims[1]) == length(dims[2])
+    @assert length(dims[2]) == ndims(a) "all the dimensions of `a` must be mapped to another dimension of `c`"
+
+    @assert all(((dim_c, dim_a),) -> size(c, dim_c) == size(a, dim_a) || size(a, dim_a) == 1, zip(dims[1], dims[2]))
+end
+
+hadamard_prepare_dims(dims) = (hadamard_prepare_dims_sub(dims[1]), hadamard_prepare_dims_sub(dims[2]))
+hadamard_prepare_dims_sub(dims::Tuple) = collect(dims)
+hadamard_prepare_dims_sub(dims::Vector) = dims
+
+function hadamard!(@nospecialize(c::AbstractArray), @nospecialize(a::AbstractArray); dims)
+    check_hadamard(c, a, dims)
+    _platform = promote_platform(platform(c), platform(a))
+    backend = getbackend(hadamard!, _platform)
+    return hadamard!(backend, c, a; dims=hadamard_prepare_dims(dims))
+end
+
+function hadamard!(::BackendBase, @nospecialize(c::AbstractArray), @nospecialize(a::AbstractArray); dims)
+    # check if this is just a tensor-scalar multiplication
+    if ndims(a) == 0
+        c .*= a
+        return c
+    end
+
+    perm = sortperm(dims[1])
+    dims_c = dims[1][perm]
+    dims_a = dims[2][perm]
+
+    if !issorted(dims_a)
+        perm = sortperm(dims_a)
+        dims_a = dims_a[perm]
+        a = permutedims(a, perm)
+    end
+
+    # compute the broadcast shape for `a`
+    shape_a_bcast = ones(Int, ndims(c))
+    for (dim_c, dim_a) in zip(dims_c, dims_a)
+        shape_a_bcast[dim_c] = size(a, dim_a)
+    end
+
+    # broadcast element-wise multiplication (Hadamard product)
+    a_reshaped = reshape(a, Tuple(shape_a_bcast))
+    c .*= a_reshaped
+
+    return c
+end
+
 @nospecializeinfer function check_binary_einsum(
     @nospecialize(a), @nospecialize(b), @nospecialize(contracting_dims), @nospecialize(batching_dims)
 )
